@@ -1882,12 +1882,13 @@ cg      dimension disgradceq(3,3),disgradceq6(6)
       
 
 #ifdef MPI
-       integer rank, size, ierror, tag  
+       integer rank, size, ierror, tag, REQUEST 
        integer status(MPI_STATUS_SIZE)
        integer ib,ie,ib_recv,ie_recv
        double precision sgnorm_global,dgnorm_global
        double precision dsgnorm1_global,dsgnorm2_global,ddgnorm_global
-       double precision ERRS_global,ERRE_global
+c       double precision ERRS_global,ERRE_global
+       real ERRS_global,ERRE_global
 #endif
        double precision sum_edotp_sg_eval_in_evapl,sum_chg_basis_in_evapl       
        double precision t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12
@@ -1907,7 +1908,7 @@ c      print*,"define ib ie"
 #ifdef MPI
       ib=(npts3/size)*rank+1
       ie=npts3/size*(1+rank)
-      print*,ib,ie
+c      print*,ib,ie
 c      pause
 #endif
 #endif
@@ -2316,36 +2317,34 @@ cg
 
 
 !MPI_broadcast (Does not work here)
-#if 0
-#ifdef MPI
-       do iiiii=1,size
-	if(rank .eq. iiiii-1) then
-	  do jjjjj=1,size
 c      		call MPI_Bcast( sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib), 
 c     		#  MPI_DOUBLE_PRECISION,iiiii-1, MPI_COMM_WORLD, ierr )
-      
-	    if(rank .ne. jjjjj-1) then
-	      call MPI_SEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
-	    #  MPI_DOUBLE_PRECISION,  jjjjj-1,1234, MPI_COMM_WORLD,ierr ) 
-	    endif
-	  enddo !do jjjjj=1,size
-	endif !if(rank .eq. iiiii-1) then
-
-
-	do jjjjj=1,size
-	  if(rank .ne. iiiii-1) then
-	    ib_recv=(npts3/size)*(iiiii-1)+1
-	    ie_recv=npts3/size*(iiiii)
-	    call MPI_RECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
-	    #   ,MPI_DOUBLE_PRECISION,iiiii-1,1234,  
-	    # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-	  endif
-	enddo
-       enddo !do iiiii=1,size
-      
- 
-       
-#endif
+!CORRECT WAY TO SEND AND RECIEVE DATA TO ALL PROCESSORS!!!
+#ifdef MPI
+      do jjjjj=1,size
+	if(rank .ne. jjjjj-1) then
+	  call MPI_ISEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+     #  MPI_DOUBLE_PRECISION,  jjjjj-1,1234,
+     #  MPI_COMM_WORLD,REQUEST,ierr )
+	  ib_recv=(npts3/size)*(jjjjj-1)+1
+	  ie_recv=npts3/size*(jjjjj)
+c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
+	  call MPI_RECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
+     #   ,MPI_DOUBLE_PRECISION,jjjjj-1,1234,  
+     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
+c	  call MPI_WAIT(REQUEST, STATUS, ierr)
+	endif
+      enddo !do jjjjj=1,size
+      call MPI_WAIT(REQUEST, STATUS, ierr)
+c      do jjjjj=1,size
+c	if(rank .ne. jjjjj-1) then
+c	  ib_recv=(npts3/size)*(jjjjj-1)+1
+c	  ie_recv=npts3/size*(jjjjj)
+c	  call MPI_IRECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
+c    #   ,MPI_DOUBLE_PRECISION,jjjjj-1,1234,  
+c     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
+c	endif
+c      enddo       
 #endif
 
 ! To For the edotp array at the end of evpal 
@@ -2399,31 +2398,29 @@ c     		#  MPI_DOUBLE_PRECISION,iiiii-1, MPI_COMM_WORLD, ierr )
 
 
 ! To reduce over ERRS and ERRE reduction
-#ifdef UMPI
-      if(rank.eq.0) then
-      print*,"ERR0 ERR0",ERRS 
-    
-      endif
-      if(rank.eq.1) then
-      print*,"ERR1 ERR1",ERRS
-      endif
-       call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_DOUBLE_PRECISION, 
+#ifdef MPI
+c      if(rank.eq.0) then
+c      print*,"ERR0 ERR0",ERRS 
+c    
+c      endif
+c      if(rank.eq.1) then
+c      print*,"ERR1 ERR1",ERRS
+c      endif
+       call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_REAL, 
      #           MPI_SUM,MPI_COMM_WORLD,ierr)
-   
-       call MPI_Allreduce(ERRE, ERRE_global, 1,MPI_DOUBLE_PRECISION, 
+       call MPI_Allreduce(ERRE, ERRE_global, 1,MPI_REAL, 
      #           MPI_SUM,MPI_COMM_WORLD,ierr)
-    
 c      call MPI_Reduce(ERRS, ERRS_global, 1, MPI_DOUBLE_PRECISION, 
 c     #           MPI_SUM,0,MPI_COMM_WORLD,ierr) 
 c      call MPI_Reduce(ERRE, ERRE_global, 1, MPI_DOUBLE_PRECISION, 
 c     #           MPI_SUM,0,MPI_COMM_WORLD,ierr)
-      if(rank.eq.0) then
-      print*,"ERRS ERRS ERRS ERRS ERRS",ERRS_global 
-      endif
+c      if(rank.eq.0) then
+c      print*,"ERRS ERRS ERRS ERRS ERRS",ERRS_global 
+c      endif
        ERRS=ERRS_global
        ERRE=ERRE_global
 
- 
+
 #endif
 
 !For the gamdot array in edot_p_sg_eval routine
