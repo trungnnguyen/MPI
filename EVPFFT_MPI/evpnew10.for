@@ -1967,19 +1967,21 @@ c#endif
 cth
 caps      write(*,'(1H+,i5,a)') int(100.*i/npts1),'% COMPLETED'
 cth
-      do 877 i=1,npts1
-#ifdef UGPU
-!$ACC loop seq
-#endif
-      do 877 j=1,npts2
-#ifdef UGPU
-!$ACC loop seq
-#endif
+
 #ifndef MPI
        do 877 k=1,npts3
 #else
        do 877 k=ib,ie 
 #endif 
+       do 877 j=1,npts1
+#ifdef UGPU
+!$ACC loop seq
+#endif
+       do 877 i=1,npts2
+#ifdef UGPU
+!$ACC loop seq
+#endif
+
 cg
        jph=jphase(i,j,k)
 cg
