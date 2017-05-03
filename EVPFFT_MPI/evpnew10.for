@@ -71,12 +71,13 @@ cg      COMMON/ELAS/cc(3,3,3,3),c0(3,3,3,3),s0(3,3,3,3),
      #            cg66(6,6,NPTS1,NPTS2,NPTS3),c066(6,6)
 
       double precision GAMDOT(NSYSMX,NPTS1,NPTS2,NPTS3),
+     #            TRIALTAU(NSYSMX,2,NPTS1,NPTS2,NPTS3),
      #            GACUMGR(NPTS1,NPTS2,NPTS3),
-     #            TRIALTAU(NSYSMX,2,NPTS1,NPTS2,NPTS3)
-cth
-     #            ,XKIN(NSYSMX,NPTS1,NPTS2,NPTS3)
-cth
-cg
+     #            XKIN(NSYSMX,NPTS1,NPTS2,NPTS3)
+ 
+     
+      
+
       dimension WPH1,SCAUAV1(3,3),SVM1
 cth
       PARAMETER(NGRAINS=5000)
@@ -1882,12 +1883,12 @@ cg      dimension disgradceq(3,3),disgradceq6(6)
       
 
 #ifdef MPI
-       integer rank, size, ierror, tag, REQUEST 
+       integer rank, size, ierror, tag, REQUEST(2) 
        integer status(MPI_STATUS_SIZE)
        integer ib,ie,ib_recv,ie_recv
        double precision sgnorm_global,dgnorm_global
        double precision dsgnorm1_global,dsgnorm2_global,ddgnorm_global
-c       double precision ERRS_global,ERRE_global
+c        double precision ERRS_global,ERRE_global
        real ERRS_global,ERRE_global
 #endif
        double precision sum_edotp_sg_eval_in_evapl,sum_chg_basis_in_evapl       
@@ -1918,7 +1919,9 @@ c
       ERRE=0.
       ERRS=0.
 cth
-      write(*,*)
+
+
+c      write(*,*)
 cth
 
       
@@ -2049,24 +2052,6 @@ cg       dgnorm=dgnorm+disgradaux(ii,jj)**2
        dgnorm=dgnorm+strainaux(ii,jj)**2
       enddo
       enddo
-
-#if 0 
-#ifdef MPI
-
-!      call MPI_Reduce(sgnorm, sgnorm_global, 1, MPI_DOUBLE_PRECISION, 
-!     #           MPI_SUM,0,MPI_COMM_WORLD,ierr) 
-!      call MPI_Reduce(dgnorm, dgnorm_global, 1, MPI_DOUBLE_PRECISION, 
-!     #           MPI_SUM,0,MPI_COMM_WORLD,ierr) 
-
-      call MPI_Allreduce(sgnorm, sgnorm_global, 1, MPI_DOUBLE_PRECISION, 
-     #           MPI_SUM,MPI_COMM_WORLD,ierr) 
-      call MPI_Allreduce(dgnorm, dgnorm_global, 1, MPI_DOUBLE_PRECISION, 
-     #           MPI_SUM,MPI_COMM_WORLD,ierr)
-
-
-#endif
-
-#endif
  
 c
 
@@ -2275,7 +2260,7 @@ c
        ERRS=ERRS+dsgnorm2*WGT
        ERRE=ERRE+ddgnorm*WGT
 
-
+     
 
       
 
@@ -2313,67 +2298,199 @@ cg
       endif    !   igas endif
 cg 
 877   continue
-     
-
+      
+c      print*,sg(1:2,1:2,1:2,1:2,1:2)
+c      print*,sg(1:2,1:2,1:2,1:2,30:32)
 
 !MPI_broadcast (Does not work here)
 c      		call MPI_Bcast( sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib), 
 c     		#  MPI_DOUBLE_PRECISION,iiiii-1, MPI_COMM_WORLD, ierr )
 !CORRECT WAY TO SEND AND RECIEVE DATA TO ALL PROCESSORS!!!
+#if 0
 #ifdef MPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
 	  call MPI_ISEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
      #  MPI_DOUBLE_PRECISION,  jjjjj-1,1234,
-     #  MPI_COMM_WORLD,REQUEST,ierr )
+     #  MPI_COMM_WORLD,REQUEST(1),ierr )
 	  ib_recv=(npts3/size)*(jjjjj-1)+1
 	  ie_recv=npts3/size*(jjjjj)
 c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	  call MPI_RECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
+	call MPI_IRECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
      #   ,MPI_DOUBLE_PRECISION,jjjjj-1,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-c	  call MPI_WAIT(REQUEST, STATUS, ierr)
+     # MPI_COMM_WORLD,REQUEST(2), ierr )
 	endif
       enddo !do jjjjj=1,size
-      call MPI_WAIT(REQUEST, STATUS, ierr)
-c      do jjjjj=1,size
-c	if(rank .ne. jjjjj-1) then
-c	  ib_recv=(npts3/size)*(jjjjj-1)+1
-c	  ie_recv=npts3/size*(jjjjj)
-c	  call MPI_IRECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
-c    #   ,MPI_DOUBLE_PRECISION,jjjjj-1,1234,  
-c     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-c	endif
-c      enddo       
+      call MPI_WAIT(REQUEST(1), STATUS, ierr)
+      call MPI_WAIT(REQUEST(2), STATUS, ierr)
+     
+#endif
+
+
+#else
+
+#ifdef MPI
+      do jjjjj=1,size
+	if(rank .ne. jjjjj-1) then
+	  call MPI_ISEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+     #  MPI_REAL,jjjjj-1,1234,
+     #  MPI_COMM_WORLD,REQUEST(1),ierr )
+	  ib_recv=(npts3/size)*(jjjjj-1)+1
+	  ie_recv=npts3/size*(jjjjj)
+c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
+	call MPI_IRECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
+     #   ,MPI_REAL,jjjjj-1,1234,  
+     # MPI_COMM_WORLD,REQUEST(2), ierr )
+	endif
+      enddo !do jjjjj=1,size
+      call MPI_WAIT(REQUEST(1), STATUS, ierr)
+      call MPI_WAIT(REQUEST(2), STATUS, ierr)
+     
+#endif
+#endif
+
+
+
+
+#if 0 
+#ifdef MPI
+      do jjjjj=1,size
+	if(rank .ne. jjjjj-1) then
+	  call MPI_ISEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+     #  MPI_DOUBLE_PRECISION,  jjjjj-1,1235,
+     #  MPI_COMM_WORLD,REQUEST(1),ierr )
+	  ib_recv=(npts3/size)*(jjjjj-1)+1
+	  ie_recv=npts3/size*(jjjjj)
+c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
+	  call MPI_IRECV(edotp(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
+     #   ,MPI_DOUBLE_PRECISION,jjjjj-1,1235,  
+     # MPI_COMM_WORLD, REQUEST(2),ierr )
+	endif
+      enddo !do jjjjj=1,size
+       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+      call MPI_WAIT(REQUEST(2), STATUS, ierr)
+     
+#endif
+
+#else
+
+#ifdef MPI
+      do jjjjj=1,size
+	if(rank .ne. jjjjj-1) then
+	  call MPI_ISEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+     #  MPI_REAL,  jjjjj-1,1235,
+     #  MPI_COMM_WORLD,REQUEST(1),ierr )
+	  ib_recv=(npts3/size)*(jjjjj-1)+1
+	  ie_recv=npts3/size*(jjjjj)
+c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
+	  call MPI_IRECV(edotp(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
+     #   ,MPI_REAL,jjjjj-1,1235,  
+     # MPI_COMM_WORLD, REQUEST(2),ierr )
+	endif
+      enddo !do jjjjj=1,size
+       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+      call MPI_WAIT(REQUEST(2), STATUS, ierr)
+     
+#endif
+
+#endif
+
+
+#if 1
+#ifdef MPI
+      do jjjjj=1,size
+	if(rank .ne. jjjjj-1) then
+	  call MPI_ISEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib),
+     #  MPI_DOUBLE_PRECISION,  jjjjj-1,1236,
+     #  MPI_COMM_WORLD,REQUEST(1),ierr )
+	  ib_recv=(npts3/size)*(jjjjj-1)+1
+	  ie_recv=npts3/size*(jjjjj)
+c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
+	  call MPI_IRECV(gamdot(:,:,:,ib_recv:ie_recv)
+     #   ,12*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,jjjjj-1,1236,  
+     # MPI_COMM_WORLD, REQUEST(2),ierr )
+	endif
+      enddo !do jjjjj=1,size
+       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+      call MPI_WAIT(REQUEST(2), STATUS, ierr)
+     
+#endif
+#else
+#ifdef MPI
+      do jjjjj=1,size
+	if(rank .ne. jjjjj-1) then
+	  call MPI_ISEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib),
+     #  MPI_REAL,  jjjjj-1,1236,
+     #  MPI_COMM_WORLD,REQUEST(1),ierr )
+	  ib_recv=(npts3/size)*(jjjjj-1)+1
+	  ie_recv=npts3/size*(jjjjj)
+c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
+	  call MPI_IRECV(gamdot(:,:,:,ib_recv:ie_recv)
+     #   ,12*npts1*npts2*(ie-ib),MPI_REAL,jjjjj-1,1236,  
+     # MPI_COMM_WORLD, REQUEST(2),ierr )
+	endif
+      enddo !do jjjjj=1,size
+       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+      call MPI_WAIT(REQUEST(2), STATUS, ierr)
+     
+#endif
+
+#endif
+
+
+
+
+#if 1 
+#ifdef MPI
+      do jjjjj=1,size
+	if(rank .ne. jjjjj-1) then
+	  call MPI_ISEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib),
+     #  MPI_DOUBLE_PRECISION,  jjjjj-1,1237,
+     #  MPI_COMM_WORLD,REQUEST(1),ierr )
+	  ib_recv=(npts3/size)*(jjjjj-1)+1
+	  ie_recv=npts3/size*(jjjjj)
+c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
+	  call MPI_IRECV(TRIALTAU(:,:,:,:,ib_recv:ie_recv)
+     #  ,12*2*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,jjjjj-1,1237,  
+     # MPI_COMM_WORLD, REQUEST(2),ierr )
+	endif
+      enddo !do jjjjj=1,size
+       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+      call MPI_WAIT(REQUEST(2), STATUS, ierr)
+     
+#endif
+
+#else
+
+#ifdef MPI
+      do jjjjj=1,size
+	if(rank .ne. jjjjj-1) then
+	  call MPI_ISEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib),
+     #  MPI_REAL,  jjjjj-1,1237,
+     #  MPI_COMM_WORLD,REQUEST(1),ierr )
+	  ib_recv=(npts3/size)*(jjjjj-1)+1
+	  ie_recv=npts3/size*(jjjjj)
+c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
+	  call MPI_IRECV(TRIALTAU(:,:,:,:,ib_recv:ie_recv)
+     #  ,12*2*npts1*npts2*(ie-ib),MPI_REAL,jjjjj-1,1237,  
+     # MPI_COMM_WORLD, REQUEST(2),ierr )
+	endif
+      enddo !do jjjjj=1,size
+       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+      call MPI_WAIT(REQUEST(2), STATUS, ierr)
+     
+#endif
+
 #endif
 
 ! To For the edotp array at the end of evpal 
-#ifdef MPI
-
-	if(rank .eq. 0) then
-      call MPI_SEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
-     #  MPI_DOUBLE_PRECISION, 1,1234, MPI_COMM_WORLD,ierr )
-	     ib_recv=npts3/2+1
-	     ie_recv=npts3
-      call MPI_RECV(edotp(:,:,:,:,ib_recv:ie_recv) 
-     # ,3*3*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,1,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-	elseif(rank .eq. 1) then
-	     ib_recv=1
-	     ie_recv=npts3/2
-      call MPI_RECV(edotp(:,:,:,:,ib_recv:ie_recv),
-     # 3*3*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,0,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-	call MPI_SEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
-     #  MPI_DOUBLE_PRECISION, 0,1234, MPI_COMM_WORLD,ierr ) 
-       endif !do iiiii=1,size
  
-       
-#endif
+
 
 
 ! To For the sg array at the end of evpal 
-#ifdef MPI
+# 
+#ifdef UMPI
 
 	if(rank .eq. 0) then
       call MPI_SEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
@@ -2397,34 +2514,32 @@ c      enddo
 #endif
 
 
-! To reduce over ERRS and ERRE reduction
-#ifdef MPI
-c      if(rank.eq.0) then
-c      print*,"ERR0 ERR0",ERRS 
-c    
-c      endif
-c      if(rank.eq.1) then
-c      print*,"ERR1 ERR1",ERRS
-c      endif
-       call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_REAL, 
-     #           MPI_SUM,MPI_COMM_WORLD,ierr)
-       call MPI_Allreduce(ERRE, ERRE_global, 1,MPI_REAL, 
-     #           MPI_SUM,MPI_COMM_WORLD,ierr)
-c      call MPI_Reduce(ERRS, ERRS_global, 1, MPI_DOUBLE_PRECISION, 
-c     #           MPI_SUM,0,MPI_COMM_WORLD,ierr) 
-c      call MPI_Reduce(ERRE, ERRE_global, 1, MPI_DOUBLE_PRECISION, 
-c     #           MPI_SUM,0,MPI_COMM_WORLD,ierr)
-c      if(rank.eq.0) then
-c      print*,"ERRS ERRS ERRS ERRS ERRS",ERRS_global 
-c      endif
-       ERRS=ERRS_global
-       ERRE=ERRE_global
+#ifdef UMPI
 
-
+	if(rank .eq. 0) then
+      call MPI_SEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+     #  MPI_DOUBLE_PRECISION, 1,1234, MPI_COMM_WORLD,ierr )
+	     ib_recv=npts3/2+1
+	     ie_recv=npts3
+      call MPI_RECV(edotp(:,:,:,:,ib_recv:ie_recv) 
+     # ,3*3*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,1,1234,  
+     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
+	elseif(rank .eq. 1) then
+	     ib_recv=1
+	     ie_recv=npts3/2
+      call MPI_RECV(edotp(:,:,:,:,ib_recv:ie_recv),
+     # 3*3*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,0,1234,  
+     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
+	call MPI_SEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+     #  MPI_DOUBLE_PRECISION, 0,1234, MPI_COMM_WORLD,ierr ) 
+       endif !do iiiii=1,size
+ 
+       
 #endif
 
+
 !For the gamdot array in edot_p_sg_eval routine
-#ifdef MPI
+#ifdef UMPI
 
 	if(rank .eq. 0) then
       call MPI_SEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib), 
@@ -2448,7 +2563,7 @@ c      endif
 #endif
  
 !For the TRIALTAU array in get_trialtau routine
-#ifdef MPI
+#ifdef UMPI
 
 	if(rank .eq. 0) then
       call MPI_SEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib), 
@@ -2471,6 +2586,44 @@ c      endif
        
 #endif
 
+
+
+! To reduce over ERRS and ERRE reduction
+#ifdef MPI
+c      if(rank.eq.0) then
+c      print*,"ERR0 ERR0",ERRS 
+c    
+c      endif
+c      if(rank.eq.1) then
+c      print*,"ERR1 ERR1",ERRS
+c      endif
+
+
+       call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_REAL, 
+     #           MPI_SUM,MPI_COMM_WORLD,ierr)
+       call MPI_Allreduce(ERRE, ERRE_global, 1,MPI_REAL, 
+     #           MPI_SUM,MPI_COMM_WORLD,ierr)
+
+
+c       call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_DOUBLE_PRECISION, 
+c     #           MPI_SUM,MPI_COMM_WORLD,ierr)
+c       call MPI_Allreduce(ERRE, ERRE_global, 1,MPI_DOUBLE_PRECISION, 
+c     #           MPI_SUM,MPI_COMM_WORLD,ierr)
+
+
+c      call MPI_Reduce(ERRS, ERRS_global, 1, MPI_DOUBLE_PRECISION, 
+c     #           MPI_SUM,0,MPI_COMM_WORLD,ierr) 
+c      call MPI_Reduce(ERRE, ERRE_global, 1, MPI_DOUBLE_PRECISION, 
+c     #           MPI_SUM,0,MPI_COMM_WORLD,ierr)
+c      if(rank.eq.0) then
+c      print*,"ERRS ERRS ERRS ERRS ERRS",ERRS_global 
+c      endif
+       ERRS=ERRS_global
+       ERRE=ERRE_global
+
+
+#endif
+
  
 
 
@@ -2488,8 +2641,8 @@ c      endif
 #ifdef OMP
 !$omp end parallel do
 #endif
-      write(*,*) 'ERRE=',erre
-      write(*,*) 'ERRS=',errs
+c      write(*,*) 'ERRE=',erre
+c      write(*,*) 'ERRS=',errs
 cx      pause
 
       
@@ -2509,12 +2662,34 @@ c
 c
       USE fft_dim_MODULE
 c
+
+#ifdef MPI
+!       include 'mpif.h'
+       USE mpi
+#endif
       dimension sav6(6),sav5(5)
       dimension aux55(5,5),aux66(6,6),aux3333(3,3,3,3)
       DIMENSION IJV(6,2)
 cc      dimension scauav(3,3)
 
       DATA ((IJV(N,M),M=1,2),N=1,6)/1,1,2,2,3,3,2,3,1,3,1,2/
+
+      dimension aa(3,3),distor(3,3)
+      dimension dnsa(3),dbsa(3)
+      dimension rotslip(3,3),rotloc(3,3),rot(3,3)
+c
+
+#ifdef MPI
+       integer rank, size, ierror, tag, REQUEST(2) 
+       integer status(MPI_STATUS_SIZE)
+       integer ib,ie,ib_recv,ie_recv
+
+       call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
+       call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
+c      print*, "I am Node",rank,"out of",size,"cores"
+#endif
+
+
 c
 c     OVERALL STRESS
 c
@@ -2573,10 +2748,30 @@ c
       enddo
       enddo
 c
+
+#ifdef MPI
+       if(rank .eq. 0) then
+
+
       write(*,*) 'DDISGRADMACRO(1,1),(2,2)=',
      #         ddisgradmacro(1,1),ddisgradmacro(2,2)
 cc      write(*,*) 'DDISGRADMACROACUM(1,1),(2,2)=',
 cc     #         ddisgradmacroacum(1,1),ddisgradmacroacum(2,2)
+
+       endif
+#else
+
+      write(*,*) 'DDISGRADMACRO(1,1),(2,2)=',
+     #         ddisgradmacro(1,1),ddisgradmacro(2,2)
+cc      write(*,*) 'DDISGRADMACROACUM(1,1),(2,2)=',
+cc     #         ddisgradmacroacum(1,1),ddisgradmacroacum(2,2)
+
+#endif
+
+
+
+
+
 c
 cc      call chg_basis(sav6,scauchy,aux66,aux3333,2,6)
       call chg_basis(sav6,scauav,aux66,aux3333,2,6)
@@ -2769,6 +2964,9 @@ C
       dimension th(3,3)
       dimension rot(3,3),anew(3,3)
 
+  
+
+
 c     BUILD ROTATION TENSOR BASED ON RODRIGUES FORMULA
 
       v(1)=c(3,2)
@@ -2819,10 +3017,25 @@ c     BUILD ROTATION TENSOR BASED ON RODRIGUES FORMULA
 c
       USE fft_dim_MODULE
 c
+#ifdef MPI
+!       include 'mpif.h'
+       USE mpi
+#endif
       dimension aa(3,3),distor(3,3)
       dimension dnsa(3),dbsa(3)
       dimension rotslip(3,3),rotloc(3,3),rot(3,3)
 c
+
+#ifdef MPI
+       integer rank, size, ierror, tag, REQUEST(2) 
+       integer status(MPI_STATUS_SIZE)
+       integer ib,ie,ib_recv,ie_recv
+
+       call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
+       call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
+c      print*, "I am Node",rank,"out of",size,"cores"
+#endif
+
       RSLBAR=0.
       RLCBAR=0.
 c
@@ -2912,10 +3125,20 @@ c
 c
 2000  continue  
 c
+
+#ifdef MPI
+       if(rank .eq. 1) then
       write(*,*)
       write(*,*) 'AVERAGE PLASTIC ROTATION =',rslbar
       write(*,*) 'AVERAGE LOCAL ROTATION =',rlcbar
       write(*,*)
+       endif
+#else
+      write(*,*)
+      write(*,*) 'AVERAGE PLASTIC ROTATION =',rslbar
+      write(*,*) 'AVERAGE LOCAL ROTATION =',rlcbar
+      write(*,*)
+#endif
 c
       RETURN
       END  subroutine update_orient
@@ -3098,6 +3321,7 @@ c
       nn2(2)=npts2
 c
       prodnn=float(nn(1)*nn(2)*nn(3))
+c      prodnn=real(nn(1)*nn(2)*nn(3))
       wgt=1./prodnn
 c
       ur0=0
@@ -3239,6 +3463,8 @@ cg
 #endif
 #endif 
 
+#ifdef MPI
+       if(rank .eq. 0) then
       write(*,*) '***************************************************'
       write(*,*) 'STEP = ',imicro
       if(nsteps.ne.1) write(21,*) 'STEP = ',imicro
@@ -3259,8 +3485,41 @@ chh     #   (imicro-1)/iwstep*iwstep.eq.(imicro-1)) then
        write(93,*) 'Zone' 
        write(94,*) 'Zone'   
        Endif    
+
+
 caps
-      ENDIF
+       ENDIF
+
+       endif
+#else
+
+     
+      write(*,*) '***************************************************'
+      write(*,*) 'STEP = ',imicro
+      if(nsteps.ne.1) write(21,*) 'STEP = ',imicro
+      write(25,*) 'STEP = ',imicro
+ch
+chh      IF(IWFIELDS.EQ.1) then
+      IF(IWFIELDS.EQ.1.AND.imicro/iwstep*iwstep.eq.imicro) then
+chh      IF(IWFIELDS.EQ.1.AND.
+chh     #   (imicro-1)/iwstep*iwstep.eq.(imicro-1)) then
+       If(.not. Tec_plot_Ouptut)  then  
+       write(91,*) 'STEP = ',imicro
+       write(92,*) 'STEP = ',imicro
+       write(93,*) 'STEP = ',imicro
+       write(94,*) 'STEP = ',imicro
+       Else
+       write(91,*) 'Zone' 
+       write(92,*) 'Zone' 
+       write(93,*) 'Zone' 
+       write(94,*) 'Zone'   
+       Endif    
+
+
+caps
+       ENDIF
+
+#endif
 cc
       do 7771 i=1,npts1
       do 7771 j=1,npts2
@@ -3318,6 +3577,10 @@ cc      do while(iter.lt.itmax.and.erre.gt.error)
 
       iter=iter+1
 c
+
+#ifdef MPI
+       if(rank .eq. 0) then
+
       write(*,*)'ITER = ',iter
 c
       write(25,*)'ITER = ',iter
@@ -3327,6 +3590,25 @@ cx       call evp(imicro,iter)
 cx       call get_smacro
 
       write(*,*) 'DIRECT FFT OF STRESS FIELD'
+      
+      endif
+#else
+      write(*,*)'ITER = ',iter
+c
+      write(25,*)'ITER = ',iter
+    
+cx       write(*,*) 'UPDATE STRESS FIELD'
+cx       call evp(imicro,iter)
+cx       call get_smacro
+
+      write(*,*) 'DIRECT FFT OF STRESS FIELD'
+
+#endif
+
+
+
+
+
 c
       do 300 ii=1,3
       do 300 jj=1,3
@@ -3381,8 +3663,14 @@ cx      enddo
 cx      pause
 cx
 
+#ifdef MPI
+       if(rank .eq. 0) then
       write(*,*) 'CALCULATING G^pq,ij : SG^ij ...'
 c
+       endif
+#else
+      write(*,*) 'CALCULATING G^pq,ij : SG^ij ...'
+#endif
 
 #ifdef GPUU
 !$ACC kernels 
@@ -3551,8 +3839,14 @@ cx      pause
 
 cc      call equilibrium(snormfft,snormfftim,nn,err2mod)
 
+#ifdef MPI
+       if(rank .eq. 0) then
       write(*,*) 'INVERSE FFT TO GET STRAIN FIELD'
 c
+       endif
+#else
+      write(*,*) 'INVERSE FFT TO GET STRAIN FIELD'
+#endif
       do 51 m=1,3
       do 51 n=1,3
 
@@ -3630,7 +3924,18 @@ c
 
 cxx      erre2=tnorm(ddisgradav,3,3)
 
+#ifdef MPI
+       if(rank .eq. 0) then
        write(*,*) 'UPDATE STRESS FIELD'
+       endif
+#else
+
+       write(*,*) 'UPDATE STRESS FIELD'
+#endif
+
+
+
+
 c       print*,"I am before evpal"
 c       print*,"ib,ie",ib,ie
 c       pause
@@ -3667,11 +3972,21 @@ cxx      erre2=erre2/evm
 cc       write(*,*) 'STRESS FIELD ERROR =',errs/svm
 cc       write(*,*) 'STRAIN FIELD ERROR =',erre/evm
 
+#ifdef MPI
+       if(rank .eq. 0) then
+       write(*,*) 'STRAIN FIELD ERROR =',erre
+cxx       write(*,*) 'STRAIN FIELD ERROR (ALT) =',erre2
+       write(*,*) 'STRESS FIELD ERROR =',errs
+
+       write(21,101) iter,erre,errs,svm
+       endif
+#else
        write(*,*) 'STRAIN FIELD ERROR =',erre
 cxx       write(*,*) 'STRAIN FIELD ERROR (ALT) =',erre2
        write(*,*) 'STRESS FIELD ERROR =',errs
 
       write(21,101) iter,erre,errs,svm
+#endif
 
 c     STATISTIC ON ACTIVITIES
 c
@@ -3743,6 +4058,11 @@ c
       enddo
       enddo
 
+#ifdef MPI
+
+      if(rank .eq. 0) then
+
+
       write(*,*) 
      #  'disgradmacro(1,1),disgradmacro(2,2),disgradmacro(3,3)'
       write(*,*) disgradmacroactual(1,1),disgradmacroactual(2,2),
@@ -3756,6 +4076,31 @@ cg      write(*,*) 'scauav(1,1),scauav(2,2),scauav(3,3)'
 cg      write(*,*) scauav(1,1),scauav(2,2),scauav(3,3)
       write(*,*) 'scauav1(1,1),scauav1(2,2),scauav1(3,3)'
       write(*,*) scauav1(1,1),scauav1(2,2),scauav1(3,3)
+
+      endif
+
+#else
+
+
+      write(*,*) 
+     #  'disgradmacro(1,1),disgradmacro(2,2),disgradmacro(3,3)'
+      write(*,*) disgradmacroactual(1,1),disgradmacroactual(2,2),
+     #            disgradmacroactual(3,3)
+c
+      write(*,*) 'disgradmacro(1,1)/disgradmacro(3,3)'
+      write(*,*) disgradmacroactual(1,1)/
+     #           disgradmacroactual(3,3)
+
+cg      write(*,*) 'scauav(1,1),scauav(2,2),scauav(3,3)'
+cg      write(*,*) scauav(1,1),scauav(2,2),scauav(3,3)
+      write(*,*) 'scauav1(1,1),scauav1(2,2),scauav1(3,3)'
+      write(*,*) scauav1(1,1),scauav1(2,2),scauav1(3,3)
+
+
+#endif
+
+
+
 c
 c     TOTAL (EL+PL) VM
 c
@@ -3833,6 +4178,11 @@ cth      IF(IUPHARD.EQ.1) CALL HARDEN
 cth      if(iuphard.eq.1.and.(ithermo.ne.1.or.imicro.gt.1))
      #  call harden
 c
+
+#ifdef MPI
+       if(rank .eq. 0) then
+
+
       write(55,315) evm,evmp,dvm,dvmp,svm,svm1
 
       write(56,315) evm,disgradmacroactual(1,1),
@@ -3881,6 +4231,68 @@ caps
       write(94,*) 
      # '   x    y    z  ngr   ph  ELLOC (11,22,33,23,31,12)'
       Endif !If(.not. Tec_plot_Ouptut)  then
+
+      endif
+#else
+
+
+      write(55,315) evm,evmp,dvm,dvmp,svm,svm1
+
+      write(56,315) evm,disgradmacroactual(1,1),
+     #   disgradmacroactual(2,2),disgradmacroactual(3,3),
+     #   evmp,epav(1,1),epav(2,2),epav(3,3),
+     #   dvm,velgradmacro(1,1),velgradmacro(2,2),velgradmacro(3,3),
+     #   dvmp,edotpav(1,1),edotpav(2,2),edotpav(3,3),
+     #   svm,scauav(1,1),scauav(2,2),scauav(3,3)
+cg
+     #   ,svm1,scauav1(1,1),scauav1(2,2),scauav1(3,3)
+cg
+315   format(24(e11.4,1x))
+c
+chh      IF(IWFIELDS.EQ.1) THEN
+      IF(IWFIELDS.EQ.1.AND.imicro/iwstep*iwstep.eq.imicro) then
+chh      IF(IWFIELDS.EQ.1.AND.
+chh     #   (imicro-1)/iwstep*iwstep.eq.(imicro-1)) then
+ch
+ch      IF(IWFIELDS.EQ.1.AND.
+ch     #  (IMICRO.EQ.1.OR.IMICRO.EQ.40.OR.IMICRO.EQ.100) ) THEN
+ch
+c      
+c      FIELDS.OUT
+c
+ch      IF(IMICRO.EQ.1) THEN
+ch      open(91,file='fields1.out',status='unknown')
+ch      ELSE IF(IMICRO.EQ.40) THEN
+ch      open(91,file='fields40.out',status='unknown')
+ch      ELSE IF(IMICRO.EQ.100) THEN
+ch      open(91,file='fields100.out',status='unknown')
+ch      ENDIF
+ch
+      If(.not. Tec_plot_Ouptut)  then     
+      write(91,*) delt
+      write(92,*) delt
+      write(93,*) delt
+      write(94,*) delt
+c
+      write(91,*) 
+     # '   x    y    z  ngr   ph  ELOC (11,22,33,23,31,12)'
+      write(92,*) 
+     # '   x    y    z  ngr   ph  SLOC (11,22,33,23,31,12)'
+      write(93,*) 
+     # '   x    y    z  ngr   ph  DPLOC (11,22,33,23,31,12)'
+caps
+      write(94,*) 
+     # '   x    y    z  ngr   ph  ELLOC (11,22,33,23,31,12)'
+      Endif !If(.not. Tec_plot_Ouptut)  then
+
+#endif
+
+
+
+
+
+
+
       do k=1,npts3
       do j=1,npts2
       do i=1,npts1
@@ -3920,6 +4332,12 @@ caps       eel(ii,jj)=0.
 cg
        endif    ! igas endif
 caps
+
+
+
+#ifdef MPI
+       if(rank.eq.0) then
+
       write(91,305)  xk_gb(1,i,j,k),xk_gb(2,i,j,k),xk_gb(3,i,j,k),
      # jgrain(i,j,k),jphase(i,j,k),
      # disgrad(1,1,i,j,k),disgrad(2,2,i,j,k),disgrad(3,3,i,j,k),
@@ -3941,6 +4359,36 @@ caps
 caps
 c305   format(5i5,21(e11.3,1x))
 305    format(3(e11.3,1x),2i5,21(e11.3,1x))
+
+      endif
+
+#else
+
+      write(91,305)  xk_gb(1,i,j,k),xk_gb(2,i,j,k),xk_gb(3,i,j,k),
+     # jgrain(i,j,k),jphase(i,j,k),
+     # disgrad(1,1,i,j,k),disgrad(2,2,i,j,k),disgrad(3,3,i,j,k),
+     # disgrad(2,3,i,j,k),disgrad(3,1,i,j,k),disgrad(1,2,i,j,k) 
+     
+      write(92,305) xk_gb(1,i,j,k),xk_gb(2,i,j,k),xk_gb(3,i,j,k),
+     # jgrain(i,j,k),jphase(i,j,k),
+     # sg(1,1,i,j,k),sg(2,2,i,j,k),sg(3,3,i,j,k),
+     # sg(2,3,i,j,k),sg(3,1,i,j,k),sg(1,2,i,j,k)
+
+      write(93,305) xk_gb(1,i,j,k),xk_gb(2,i,j,k),xk_gb(3,i,j,k),
+     #jgrain(i,j,k),jphase(i,j,k),
+     # edotp(1,1,i,j,k),edotp(2,2,i,j,k),edotp(3,3,i,j,k),
+     # edotp(2,3,i,j,k),edotp(3,1,i,j,k),edotp(1,2,i,j,k)
+caps
+      write(94,305) xk_gb(1,i,j,k),xk_gb(2,i,j,k),xk_gb(3,i,j,k),
+     # jgrain(i,j,k),jphase(i,j,k),
+     # eel(1,1),eel(2,2),eel(3,3),eel(2,3),eel(3,1),eel(1,2)
+caps
+c305   format(5i5,21(e11.3,1x))
+305    format(3(e11.3,1x),2i5,21(e11.3,1x))
+
+#endif
+
+
    
 c
       enddo
@@ -3982,11 +4430,27 @@ c
       fbar(i,i)=delt(i)
       enddo
 c
+#ifdef MPI
+       if(rank.eq.0) then
+
       write(24,*)'TEX.OUT from FFT'
       write(24,*)'Formatted to plot with POLE'
       write(24,111)((fbar(i,j),j=1,3),i=1,3)
       write(24,'(a1,i10)') 'B',npts1*npts2*npts3
 111   format(9f7.3) 
+       endif
+#else
+      write(24,*)'TEX.OUT from FFT'
+      write(24,*)'Formatted to plot with POLE'
+      write(24,111)((fbar(i,j),j=1,3),i=1,3)
+      write(24,'(a1,i10)') 'B',npts1*npts2*npts3
+111   format(9f7.3) 
+
+#endif
+
+
+
+
 c
       ig=0
       do k=1,npts3
@@ -4002,8 +4466,22 @@ c
 c
       call euler(1,ph,th,om,aux33)
 c
+
+
+#ifdef MPI
+       if(rank.eq.0) then
+
        write(24,3305) ph,th,om,one,i,j,k,jgrain(i,j,k),jphase(i,j,k)
 3305  format(4(f9.3,1x),5i5)
+
+       endif
+
+#else
+       write(24,3305) ph,th,om,one,i,j,k,jgrain(i,j,k),jphase(i,j,k)
+3305  format(4(f9.3,1x),5i5)
+
+#endif
+
 c
       enddo
       enddo
