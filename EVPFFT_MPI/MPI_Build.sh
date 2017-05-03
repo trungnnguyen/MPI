@@ -1,3 +1,3 @@
-mpif90 -Mpreprocess -DMPI   -DUSE_FOURN -fast -tp=p7 -lrt evpnew10.for fourn.c -o EVPFFTTTTTT
+mpif90 -Mpreprocess -DMPI  -mcmodel=medium -Mlarge_arrays  -Mr8 -r8 -Msave -DUSE_FOURN -fast -tp=p7 -lrt evpnew10.for fourn.c -o EVPFFT 
  
 

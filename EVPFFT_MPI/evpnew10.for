@@ -42,7 +42,7 @@ cw
       dimension NPH,NELEM,IPHBOT,IPHTOP,NGR
 cw
       dimension WGT,CRSS(NSYSMX,2,NPTS1,NPTS2,NPTS3),
-     #     SG(3,3,NPTS1,NPTS2,NPTS3),
+     #     SG(3,3,NPTS1,NPTS2,NPTS3),sg_gathered(3,3,NPTS1,NPTS2,NPTS3),
      #     EDOTP(3,3,NPTS1,NPTS2,NPTS3),EPT(3,3,NPTS1,NPTS2,NPTS3),
      #     SCH(5,NSYSMX,NPTS1,NPTS2,NPTS3),AG(3,3,NPTS1,NPTS2,NPTS3),
      #     DISGRAD(3,3,NPTS1,NPTS2,NPTS3),
@@ -70,7 +70,7 @@ cg      COMMON/ELAS/cc(3,3,3,3),c0(3,3,3,3),s0(3,3,3,3),
       dimension cc(3,3,3,3,NPHMX),c0(3,3,3,3),s0(3,3,3,3),
      #            cg66(6,6,NPTS1,NPTS2,NPTS3),c066(6,6)
 
-      double precision GAMDOT(NSYSMX,NPTS1,NPTS2,NPTS3),
+      dimension GAMDOT(NSYSMX,NPTS1,NPTS2,NPTS3),
      #            TRIALTAU(NSYSMX,2,NPTS1,NPTS2,NPTS3),
      #            GACUMGR(NPTS1,NPTS2,NPTS3),
      #            XKIN(NSYSMX,NPTS1,NPTS2,NPTS3)
@@ -86,7 +86,7 @@ cth
       PARAMETER (RSQ2=0.70710678118654744)
       PARAMETER (RSQ3=0.57735026918962584)
       PARAMETER (RSQ6=0.40824829046386304)
-      Double precision B(3,3,6)
+      dimension B(3,3,6)
       
 
 c      COMMON/BASIS/ B(3,3,6)
@@ -1886,10 +1886,10 @@ cg      dimension disgradceq(3,3),disgradceq6(6)
        integer rank, size, ierror, tag, REQUEST(2) 
        integer status(MPI_STATUS_SIZE)
        integer ib,ie,ib_recv,ie_recv
-       double precision sgnorm_global,dgnorm_global
-       double precision dsgnorm1_global,dsgnorm2_global,ddgnorm_global
+ 
 c        double precision ERRS_global,ERRE_global
        real ERRS_global,ERRE_global
+c       real sg_gathered
 #endif
        double precision sum_edotp_sg_eval_in_evapl,sum_chg_basis_in_evapl       
        double precision t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12
@@ -2297,6 +2297,11 @@ cg
 cg
       endif    !   igas endif
 cg 
+
+
+
+
+
 877   continue
       
 c      print*,sg(1:2,1:2,1:2,1:2,1:2)
@@ -2306,7 +2311,7 @@ c      print*,sg(1:2,1:2,1:2,1:2,30:32)
 c      		call MPI_Bcast( sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib), 
 c     		#  MPI_DOUBLE_PRECISION,iiiii-1, MPI_COMM_WORLD, ierr )
 !CORRECT WAY TO SEND AND RECIEVE DATA TO ALL PROCESSORS!!!
-#if 0
+#if 1
 #ifdef MPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
@@ -2342,17 +2347,69 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
      #   ,MPI_REAL,jjjjj-1,1234,  
      # MPI_COMM_WORLD,REQUEST(2), ierr )
 	endif
-      enddo !do jjjjj=1,size
       call MPI_WAIT(REQUEST(1), STATUS, ierr)
       call MPI_WAIT(REQUEST(2), STATUS, ierr)
+      enddo !do jjjjj=1,size
+     
      
 #endif
 #endif
 
 
+! MPI GATHER for SG
+#if 0
+#ifdef MPI
+ 
+
+        call MPI_IAllgather(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+     #    MPI_REAL,sg_gathered(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib), 
+     #    MPI_REAL,MPI_COMM_WORLD,REQUEST(1),ierr)
+
+       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+
+      sg=sg_gathered
+#endif
+#endif
 
 
-#if 0 
+
+
+
+
+       if(imicro .eq. 2) then
+       if(rank .eq. 0) then
+       open(5555,file='sg0.out',status='unknown')
+       do 8543 i=1,npts1
+       do 8543 j=1,npts2
+       do 8543 k=1,npts3 
+       do ii=1,3
+       do jj=1,3
+       write(5555,33333) ,sg(ii,jj,i,j,k) 
+       enddo
+       enddo
+8543   continue
+       elseif(rank .eq. 1) then
+       open(6666,file='sg1.out',status='unknown')
+       do 8544 i=1,npts1
+       do 8544 j=1,npts2
+       do 8544 k=1,npts3 
+       do ii=1,3
+       do jj=1,3
+       write(6666,33333) ,sg(ii,jj,i,j,k) 
+       enddo
+       enddo
+8544   continue
+       endif
+       endif
+
+33333   format(1x,e10.4)
+
+
+
+
+
+
+#if 1 
 #ifdef MPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
@@ -2489,7 +2546,7 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 
 
 ! To For the sg array at the end of evpal 
-# 
+ 
 #ifdef UMPI
 
 	if(rank .eq. 0) then
@@ -2598,19 +2655,20 @@ c      if(rank.eq.1) then
 c      print*,"ERR1 ERR1",ERRS
 c      endif
 
-
+#if 0
        call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_REAL, 
      #           MPI_SUM,MPI_COMM_WORLD,ierr)
        call MPI_Allreduce(ERRE, ERRE_global, 1,MPI_REAL, 
      #           MPI_SUM,MPI_COMM_WORLD,ierr)
+#else
 
 
-c       call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_DOUBLE_PRECISION, 
-c     #           MPI_SUM,MPI_COMM_WORLD,ierr)
-c       call MPI_Allreduce(ERRE, ERRE_global, 1,MPI_DOUBLE_PRECISION, 
-c     #           MPI_SUM,MPI_COMM_WORLD,ierr)
+       call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_DOUBLE_PRECISION, 
+     #           MPI_SUM,MPI_COMM_WORLD,ierr)
+       call MPI_Allreduce(ERRE, ERRE_global, 1,MPI_DOUBLE_PRECISION, 
+     #           MPI_SUM,MPI_COMM_WORLD,ierr)
 
-
+#endif
 c      call MPI_Reduce(ERRS, ERRS_global, 1, MPI_DOUBLE_PRECISION, 
 c     #           MPI_SUM,0,MPI_COMM_WORLD,ierr) 
 c      call MPI_Reduce(ERRE, ERRE_global, 1, MPI_DOUBLE_PRECISION, 
