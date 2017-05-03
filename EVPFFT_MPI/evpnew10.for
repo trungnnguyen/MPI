@@ -2372,8 +2372,8 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 
 
 
-
-
+#if 0
+#ifdef MPI
 
        if(imicro .eq. 2) then
        if(rank .eq. 0) then
@@ -2403,7 +2403,8 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 
 33333   format(1x,e10.4)
 
-
+#endif
+#endif
 
 
 
@@ -4574,12 +4575,27 @@ ccc
 cc      endif
 ccc
       call cpu_time(t2)
+#ifdef MPI
+      if(rank .eq. 0) then
+      print*,"====================="
+      print*,"MPI Timing"
+      print*,"====================="
       print*,'The total CPU TIME:',t2-t1
-
       print*,"Evpal CPU time accumulated :",sum_evapl
       print*,"Evpal Portion:",sum_evapl/(t2-t1)*100,"%"
       print*,"get_smacro CPU time accumulated :",sum_get_smacro
       print*,"FOURN CPU time accumulated :",sum_FOURN
+      endif
+#else
+      print*,"====================="
+      print*,"Serial Timing"
+      print*,"====================="
+      print*,'The total CPU TIME:',t2-t1
+      print*,"Evpal CPU time accumulated :",sum_evapl
+      print*,"Evpal Portion:",sum_evapl/(t2-t1)*100,"%"
+      print*,"get_smacro CPU time accumulated :",sum_get_smacro
+      print*,"FOURN CPU time accumulated :",sum_FOURN
+#endif
  
 #ifdef MPI
 #ifdef MPI0
