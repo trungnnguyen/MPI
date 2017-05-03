@@ -2315,13 +2315,13 @@ c     		#  MPI_DOUBLE_PRECISION,iiiii-1, MPI_COMM_WORLD, ierr )
 #ifdef MPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+	  call MPI_ISEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
      #  MPI_DOUBLE_PRECISION,  jjjjj-1,1234,
      #  MPI_COMM_WORLD,REQUEST(1),ierr )
 	  ib_recv=(npts3/size)*(jjjjj-1)+1
 	  ie_recv=npts3/size*(jjjjj)
 c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	call MPI_IRECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
+	call MPI_IRECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib+1) 
      #   ,MPI_DOUBLE_PRECISION,jjjjj-1,1234,  
      # MPI_COMM_WORLD,REQUEST(2), ierr )
 	endif
@@ -2337,21 +2337,20 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 #ifdef MPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+	  call MPI_ISEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
      #  MPI_REAL,jjjjj-1,1234,
      #  MPI_COMM_WORLD,REQUEST(1),ierr )
 	  ib_recv=(npts3/size)*(jjjjj-1)+1
 	  ie_recv=npts3/size*(jjjjj)
 c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	call MPI_IRECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
+	call MPI_IRECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib+1) 
      #   ,MPI_REAL,jjjjj-1,1234,  
      # MPI_COMM_WORLD,REQUEST(2), ierr )
 	endif
+
+      enddo !do jjjjj=1,size
       call MPI_WAIT(REQUEST(1), STATUS, ierr)
       call MPI_WAIT(REQUEST(2), STATUS, ierr)
-      enddo !do jjjjj=1,size
-     
-     
 #endif
 #endif
 
@@ -2361,8 +2360,8 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 #ifdef MPI
  
 
-        call MPI_IAllgather(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
-     #    MPI_REAL,sg_gathered(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib), 
+        call MPI_IAllgather(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
+     #    MPI_REAL,sg_gathered(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
      #    MPI_REAL,MPI_COMM_WORLD,REQUEST(1),ierr)
 
        call MPI_WAIT(REQUEST(1), STATUS, ierr)
@@ -2410,16 +2409,16 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 
 
 #if 1 
-#ifdef MPI
+#ifdef UMPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+	  call MPI_ISEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
      #  MPI_DOUBLE_PRECISION,  jjjjj-1,1235,
      #  MPI_COMM_WORLD,REQUEST(1),ierr )
 	  ib_recv=(npts3/size)*(jjjjj-1)+1
 	  ie_recv=npts3/size*(jjjjj)
 c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	  call MPI_IRECV(edotp(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
+	  call MPI_IRECV(edotp(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib+1) 
      #   ,MPI_DOUBLE_PRECISION,jjjjj-1,1235,  
      # MPI_COMM_WORLD, REQUEST(2),ierr )
 	endif
@@ -2431,16 +2430,16 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 
 #else
 
-#ifdef MPI
+#ifdef UMPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+	  call MPI_ISEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
      #  MPI_REAL,  jjjjj-1,1235,
      #  MPI_COMM_WORLD,REQUEST(1),ierr )
 	  ib_recv=(npts3/size)*(jjjjj-1)+1
 	  ie_recv=npts3/size*(jjjjj)
 c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	  call MPI_IRECV(edotp(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib) 
+	  call MPI_IRECV(edotp(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib+1) 
      #   ,MPI_REAL,jjjjj-1,1235,  
      # MPI_COMM_WORLD, REQUEST(2),ierr )
 	endif
@@ -2453,18 +2452,22 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 #endif
 
 
+
+
+
+
 #if 1
 #ifdef MPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib),
+	  call MPI_ISEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib+1),
      #  MPI_DOUBLE_PRECISION,  jjjjj-1,1236,
      #  MPI_COMM_WORLD,REQUEST(1),ierr )
 	  ib_recv=(npts3/size)*(jjjjj-1)+1
 	  ie_recv=npts3/size*(jjjjj)
 c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 	  call MPI_IRECV(gamdot(:,:,:,ib_recv:ie_recv)
-     #   ,12*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,jjjjj-1,1236,  
+     #   ,12*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,jjjjj-1,1236,  
      # MPI_COMM_WORLD, REQUEST(2),ierr )
 	endif
       enddo !do jjjjj=1,size
@@ -2476,14 +2479,14 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 #ifdef MPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib),
+	  call MPI_ISEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib+1),
      #  MPI_REAL,  jjjjj-1,1236,
      #  MPI_COMM_WORLD,REQUEST(1),ierr )
 	  ib_recv=(npts3/size)*(jjjjj-1)+1
 	  ie_recv=npts3/size*(jjjjj)
 c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 	  call MPI_IRECV(gamdot(:,:,:,ib_recv:ie_recv)
-     #   ,12*npts1*npts2*(ie-ib),MPI_REAL,jjjjj-1,1236,  
+     #   ,12*npts1*npts2*(ie-ib+1),MPI_REAL,jjjjj-1,1236,  
      # MPI_COMM_WORLD, REQUEST(2),ierr )
 	endif
       enddo !do jjjjj=1,size
@@ -2501,14 +2504,14 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 #ifdef MPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib),
+	  call MPI_ISEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib+1),
      #  MPI_DOUBLE_PRECISION,  jjjjj-1,1237,
      #  MPI_COMM_WORLD,REQUEST(1),ierr )
 	  ib_recv=(npts3/size)*(jjjjj-1)+1
 	  ie_recv=npts3/size*(jjjjj)
 c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 	  call MPI_IRECV(TRIALTAU(:,:,:,:,ib_recv:ie_recv)
-     #  ,12*2*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,jjjjj-1,1237,  
+     #  ,12*2*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,jjjjj-1,1237,  
      # MPI_COMM_WORLD, REQUEST(2),ierr )
 	endif
       enddo !do jjjjj=1,size
@@ -2522,14 +2525,14 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 #ifdef MPI
       do jjjjj=1,size
 	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib),
+	  call MPI_ISEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib+1),
      #  MPI_REAL,  jjjjj-1,1237,
      #  MPI_COMM_WORLD,REQUEST(1),ierr )
 	  ib_recv=(npts3/size)*(jjjjj-1)+1
 	  ie_recv=npts3/size*(jjjjj)
 c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 	  call MPI_IRECV(TRIALTAU(:,:,:,:,ib_recv:ie_recv)
-     #  ,12*2*npts1*npts2*(ie-ib),MPI_REAL,jjjjj-1,1237,  
+     #  ,12*2*npts1*npts2*(ie-ib+1),MPI_REAL,jjjjj-1,1237,  
      # MPI_COMM_WORLD, REQUEST(2),ierr )
 	endif
       enddo !do jjjjj=1,size
@@ -2540,30 +2543,26 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 
 #endif
 
-! To For the edotp array at the end of evpal 
  
 
 
-
-! To For the sg array at the end of evpal 
- 
 #ifdef UMPI
 
 	if(rank .eq. 0) then
-      call MPI_SEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+      call MPI_SEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
      #  MPI_DOUBLE_PRECISION, 1,1234, MPI_COMM_WORLD,ierr )
 	     ib_recv=npts3/2+1
 	     ie_recv=npts3
       call MPI_RECV(sg(:,:,:,:,ib_recv:ie_recv),
-     #  3*3*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,1,1234,  
+     #  3*3*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,1,1234,  
      # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
 	elseif(rank .eq. 1) then
 	     ib_recv=1
 	     ie_recv=npts3/2
 	call MPI_RECV(sg(:,:,:,:,ib_recv:ie_recv),
-     #  3*3*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,0,1234,  
+     #  3*3*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,0,1234,  
      # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-      call MPI_SEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+      call MPI_SEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
      #  MPI_DOUBLE_PRECISION, 0,1234, MPI_COMM_WORLD,ierr ) 
        endif !do iiiii=1,size
  
@@ -2571,23 +2570,25 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 #endif
 
 
+
+
 #ifdef UMPI
 
 	if(rank .eq. 0) then
-      call MPI_SEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+      call MPI_SEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
      #  MPI_DOUBLE_PRECISION, 1,1234, MPI_COMM_WORLD,ierr )
 	     ib_recv=npts3/2+1
 	     ie_recv=npts3
       call MPI_RECV(edotp(:,:,:,:,ib_recv:ie_recv) 
-     # ,3*3*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,1,1234,  
+     # ,3*3*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,1,1234,  
      # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
 	elseif(rank .eq. 1) then
 	     ib_recv=1
 	     ie_recv=npts3/2
       call MPI_RECV(edotp(:,:,:,:,ib_recv:ie_recv),
-     # 3*3*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,0,1234,  
+     # 3*3*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,0,1234,  
      # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-	call MPI_SEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib), 
+	call MPI_SEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
      #  MPI_DOUBLE_PRECISION, 0,1234, MPI_COMM_WORLD,ierr ) 
        endif !do iiiii=1,size
  
@@ -2599,20 +2600,20 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 #ifdef UMPI
 
 	if(rank .eq. 0) then
-      call MPI_SEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib), 
+      call MPI_SEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib+1), 
      #  MPI_DOUBLE_PRECISION, 1,1234, MPI_COMM_WORLD,ierr )
 	     ib_recv=npts3/2+1
 	     ie_recv=npts3
       call MPI_RECV(gamdot(:,:,:,ib_recv:ie_recv),
-     #  12*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,1,1234,  
+     #  12*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,1,1234,  
      # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
 	elseif(rank .eq. 1) then
 	     ib_recv=1
 	     ie_recv=npts3/2
 	call MPI_RECV(gamdot(:,:,:,ib_recv:ie_recv),
-     #  12*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,0,1234,  
+     #  12*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,0,1234,  
      # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-      call MPI_SEND(gamdot(:,:,:,ib:ie), 12*npts1*npts2*(ie-ib), 
+      call MPI_SEND(gamdot(:,:,:,ib:ie), 12*npts1*npts2*(ie-ib+1), 
      #  MPI_DOUBLE_PRECISION, 0,1234, MPI_COMM_WORLD,ierr ) 
        endif !do iiiii=1,size
  
@@ -2623,20 +2624,20 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 #ifdef UMPI
 
 	if(rank .eq. 0) then
-      call MPI_SEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib), 
+      call MPI_SEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib+1), 
      #  MPI_DOUBLE_PRECISION, 1,1234, MPI_COMM_WORLD,ierr )
 	     ib_recv=npts3/2+1
 	     ie_recv=npts3
       call MPI_RECV(TRIALTAU(:,:,:,:,ib_recv:ie_recv),
-     #  12*2*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,1,1234,  
+     #  12*2*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,1,1234,  
      # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
 	elseif(rank .eq. 1) then
 	     ib_recv=1
 	     ie_recv=npts3/2
 	call MPI_RECV(TRIALTAU(:,:,:,:,ib_recv:ie_recv),
-     #  12*2*npts1*npts2*(ie-ib),MPI_DOUBLE_PRECISION,0,1234,  
+     #  12*2*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,0,1234,  
      # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-      call MPI_SEND(TRIALTAU(:,:,:,:,ib:ie), 12*2*npts1*npts2*(ie-ib), 
+      call MPI_SEND(TRIALTAU(:,:,:,:,ib:ie), 12*2*npts1*npts2*(ie-ib+1), 
      #  MPI_DOUBLE_PRECISION, 0,1234, MPI_COMM_WORLD,ierr ) 
        endif !do iiiii=1,size
  
