@@ -42,7 +42,11 @@ cw
       dimension NPH,NELEM,IPHBOT,IPHTOP,NGR
 cw
       dimension WGT,CRSS(NSYSMX,2,NPTS1,NPTS2,NPTS3),
-     #     SG(3,3,NPTS1,NPTS2,NPTS3),sg_gathered(3,3,NPTS1,NPTS2,NPTS3),
+     #     SG(3,3,NPTS1,NPTS2,NPTS3),
+     #     sg_gathered(3,3,NPTS1,NPTS2,NPTS3),
+     #     edotp_gathered(3,3,NPTS1,NPTS2,NPTS3),
+     #     gamdot_gathered(NSYSMX,NPTS1,NPTS2,NPTS3),
+     #     TRIALTAU_gathered(NSYSMX,2,NPTS1,NPTS2,NPTS3),
      #     EDOTP(3,3,NPTS1,NPTS2,NPTS3),EPT(3,3,NPTS1,NPTS2,NPTS3),
      #     SCH(5,NSYSMX,NPTS1,NPTS2,NPTS3),AG(3,3,NPTS1,NPTS2,NPTS3),
      #     DISGRAD(3,3,NPTS1,NPTS2,NPTS3),
@@ -1968,6 +1972,22 @@ cth
 caps      write(*,'(1H+,i5,a)') int(100.*i/npts1),'% COMPLETED'
 cth
 
+#ifdef MPI
+#ifdef Barrier
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
+       t20=MPI_Wtime()
+c       if(rank .eq. 0) then
+c       call CPU_TIME(t_start)
+c       Endif
+#else
+       call CPU_TIME(t20)
+#endif
+
+
+
+
+
 #ifndef MPI
        do 877 k=1,npts3
 #else
@@ -2305,6 +2325,24 @@ cg
 
 
 877   continue
+
+#ifdef MPI
+#ifdef Barrier
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
+       t21=MPI_Wtime()
+c       if(rank .eq. 0) then
+c       call CPU_TIME(t_start)
+c       Endif
+#else
+       call CPU_TIME(t21)
+#endif
+
+#ifdef MPI
+      sum_evapl_Comput=sum_evapl_Comput+t21-t20
+      print*,"Evpal time spent on the loop computation:"
+     #,sum_evapl_Comput
+#endif
       
 c      print*,sg(1:2,1:2,1:2,1:2,1:2)
 c      print*,sg(1:2,1:2,1:2,1:2,30:32)
@@ -2313,6 +2351,24 @@ c      print*,sg(1:2,1:2,1:2,1:2,30:32)
 c      		call MPI_Bcast( sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib), 
 c     		#  MPI_DOUBLE_PRECISION,iiiii-1, MPI_COMM_WORLD, ierr )
 !CORRECT WAY TO SEND AND RECIEVE DATA TO ALL PROCESSORS!!!
+
+
+
+#ifdef MPI
+#ifdef Barrier
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
+       t22=MPI_Wtime()
+c       if(rank .eq. 0) then
+c       call CPU_TIME(t_start)
+c       Endif
+#else
+       call CPU_TIME(t22)
+#endif
+
+
+#ifdef SENDRECV
+
 #if 1
 #ifdef MPI
       do jjjjj=1,size
@@ -2357,20 +2413,7 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 #endif
 
 
-! MPI GATHER for SG
-#if 0
-#ifdef MPI
- 
-
-        call MPI_IAllgather(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
-     #    MPI_REAL,sg_gathered(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
-     #    MPI_REAL,MPI_COMM_WORLD,REQUEST(1),ierr)
-
-       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-
-      sg=sg_gathered
-#endif
-#endif
+  
 
 
 
@@ -2407,7 +2450,6 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 
 #endif
 #endif
-
 
 
 
@@ -2649,6 +2691,101 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 
 
 
+
+
+#elif GATHER
+
+
+
+
+
+! MPI GATHER for SG
+ 
+#ifdef MPI
+ 
+        call MPI_Allgather(sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
+     #    MPI_DOUBLE_PRECISION,sg_gathered(:,:,:,:,:), 
+     #    3*3*npts1*npts2*(ie-ib+1),
+     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
+
+c        call MPI_IAllgather(sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
+c     #    MPI_DOUBLE_PRECISION,sg_gathered(:,:,:,:,ib:ie), 
+c     #    3*3*npts1*npts2*(ie-ib+1),
+c     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,REQUEST(1),ierr)
+
+c       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+
+      sg=sg_gathered
+ 
+#endif
+
+#ifdef MPI
+ 
+       call MPI_Allgather(edotp(:,:,:,:,ib:ie),
+     #  3*3*npts1*npts2*(ie-ib+1), 
+     #    MPI_DOUBLE_PRECISION,edotp_gathered(:,:,:,:,:), 
+     #    3*3*npts1*npts2*(ie-ib+1),
+     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
+
+c        call MPI_IAllgather(sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
+c     #    MPI_DOUBLE_PRECISION,sg_gathered(:,:,:,:,ib:ie), 
+c     #    3*3*npts1*npts2*(ie-ib+1),
+c     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,REQUEST(1),ierr)
+
+c       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+
+       edotp=edotp_gathered
+  
+#endif
+
+#ifdef MPI
+ 
+
+
+        call MPI_Allgather(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib+1), 
+     #    MPI_DOUBLE_PRECISION,gamdot_gathered(:,:,:,:), 
+     #    12*npts1*npts2*(ie-ib+1),
+     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
+
+c        call MPI_IAllgather(sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
+c     #    MPI_DOUBLE_PRECISION,sg_gathered(:,:,:,:,ib:ie), 
+c     #    3*3*npts1*npts2*(ie-ib+1),
+c     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,REQUEST(1),ierr)
+
+c       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+
+      gamdot=gamdot_gathered
+    
+#endif
+
+#ifdef MPI
+ 
+        call MPI_Allgather(TRIALTAU(:,:,:,:,ib:ie),
+     #   12*2*npts1*npts2*(ie-ib+1), 
+     #    MPI_DOUBLE_PRECISION,TRIALTAU_gathered(:,:,:,:,:), 
+     #    12*2*npts1*npts2*(ie-ib+1),
+     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
+
+c        call MPI_IAllgather(sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
+c     #    MPI_DOUBLE_PRECISION,sg_gathered(:,:,:,:,ib:ie), 
+c     #    3*3*npts1*npts2*(ie-ib+1),
+c     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,REQUEST(1),ierr)
+
+c       call MPI_WAIT(REQUEST(1), STATUS, ierr)
+
+      TRIALTAU=TRIALTAU_gathered
+ 
+#endif
+
+
+
+
+
+#endif  
+
+
+
+
 ! To reduce over ERRS and ERRE reduction
 
 c      if(rank.eq.0) then
@@ -2687,8 +2824,23 @@ c      endif
 
 
  
+#ifdef MPI
+#ifdef Barrier
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
+       t23=MPI_Wtime()
+c       if(rank .eq. 0) then
+c       call CPU_TIME(t_start)
+c       Endif
+#else
+       call CPU_TIME(t23)
+#endif
 
-
+#ifdef MPI
+       sum_evapl_Sendrecv=sum_evapl_Sendrecv+t23-t22 
+       print*,"Evpal time spent on Send_recv comunic:",
+     # sum_evapl_Sendrecv    
+#endif
  
 #if 0 
 !$ACC end parallel
@@ -3361,7 +3513,9 @@ c#endif
 
  
 #ifdef MPI
+#ifdef Barrier
        call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
        t_start=MPI_Wtime()
 c       if(rank .eq. 0) then
 c       call CPU_TIME(t_start)
@@ -3706,7 +3860,9 @@ c
 
  
 #ifdef MPI
+#ifdef Barrier
        call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
        t2=MPI_Wtime()
 c       if(rank .eq. 0) then
 c       call CPU_TIME(t2)
@@ -3719,7 +3875,9 @@ c       Endif
       call fourn(data,nn,3,1)
  
 #ifdef MPI
-      call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#ifdef Barrier
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
       t3=MPI_Wtime()
 #else 
       call cpu_time(t3)
@@ -3965,7 +4123,9 @@ c
       if(npts3.gt.1) then
  
 #ifdef MPI
-      call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#ifdef Barrier
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
       t33=MPI_Wtime()
 #else 
       call cpu_time(t33)
@@ -3975,7 +4135,9 @@ c
       call fourn(data,nn,3,-1)
  
 #ifdef MPI
-      call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#ifdef Barrier
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
       t44=MPI_Wtime()
 #else 
       call cpu_time(t44)
@@ -4061,7 +4223,9 @@ c#endif
 
  
 #ifdef MPI
-        call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#ifdef Barrier
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
         t4=MPI_Wtime()
 c       if(rank .eq. 0) then
 c       call CPU_TIME(t4)
@@ -4071,7 +4235,9 @@ c       Endif
 #endif
        call evpal(imicro)
 #ifdef MPI
-        call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#ifdef Barrier
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
         t5=MPI_Wtime()
 c       if(rank .eq. 0) then
 c       call CPU_TIME(t5)
@@ -4641,7 +4807,9 @@ ccc
 cc      endif
 ccc
 #ifdef MPI
+#ifdef Barrier
        call MPI_Barrier(MPI_COMM_WORLD,ierr)
+#endif
        t_end=MPI_Wtime()
 c       if(rank .eq. 0) then
 c       call CPU_TIME(t_end)
@@ -4667,7 +4835,7 @@ c      endif
 #else
 c      if(rank .eq. 0) then
       print*,"====================="
-      print*,"MPI Timing"
+      print*,"Serial Timing"
       print*,"====================="
       print*,"The total CPU TIME:",t_end-t_start
       print*,"Evpal CPU time accumulated :",sum_evapl
