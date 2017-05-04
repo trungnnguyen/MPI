@@ -2650,7 +2650,7 @@ c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
 
 
 ! To reduce over ERRS and ERRE reduction
-#ifdef MPI
+
 c      if(rank.eq.0) then
 c      print*,"ERR0 ERR0",ERRS 
 c    
@@ -2658,7 +2658,7 @@ c      endif
 c      if(rank.eq.1) then
 c      print*,"ERR1 ERR1",ERRS
 c      endif
-
+#ifdef MPI
 #if 0
        call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_REAL, 
      #           MPI_SUM,MPI_COMM_WORLD,ierr)
@@ -2682,9 +2682,9 @@ c      print*,"ERRS ERRS ERRS ERRS ERRS",ERRS_global
 c      endif
        ERRS=ERRS_global
        ERRE=ERRE_global
-
-
 #endif
+
+
 
  
 
@@ -3319,13 +3319,15 @@ c
       dimension fbar(3,3)
 cx       dimension velmax(3) 
 c
-      double precision t1,t2,t3,t4,t5,t6,t7,t8
+      double precision t1,t2,t3,t4,t5,t6,t7,t8,t_start,t_end
       double precision sum_evapl,sum_get_smacro,sum_FOURN
      
 #ifdef MPI
        integer rank, size, ierror, tag  
        integer status(MPI_STATUS_SIZE)
+       
 c       integer ib,ie
+   
 #endif
  
 #ifdef MPI
@@ -3347,11 +3349,7 @@ c#endif
  
 
  
-#ifndef MPI
-       call CPU_TIME(t1)
-#else
-       time1=MPI_Wtime()
-#endif
+
 
 #ifdef MPI 
 #ifdef MPI0
@@ -3361,9 +3359,21 @@ c#endif
      
 
 
-
  
-      call cpu_time(t1)
+#ifdef MPI
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+       t_start=MPI_Wtime()
+c       if(rank .eq. 0) then
+c       call CPU_TIME(t_start)
+c       Endif
+#else
+       call CPU_TIME(t_start)
+#endif
+    
+ 
+
+
+
       pi=4.*atan(1.)
 c
       open(55,file='vm.out',status='unknown')
@@ -3690,11 +3700,32 @@ c
       data(k1)=0.
 5     continue 
 c
-      if(npts3.gt.1) then
-      call CPU_TIME(t7)
+
+       if(npts3.gt.1) then
+ 
+
+ 
+#ifdef MPI
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+       t2=MPI_Wtime()
+c       if(rank .eq. 0) then
+c       call CPU_TIME(t2)
+c       Endif
+#else
+       call CPU_TIME(t2)
+#endif
+
+
       call fourn(data,nn,3,1)
-      call CPU_TIME(t8)
-      sum_FOURN=sum_FOURN+(t8-t7)
+ 
+#ifdef MPI
+      call MPI_Barrier(MPI_COMM_WORLD,ierr)
+      t3=MPI_Wtime()
+#else 
+      call cpu_time(t3)
+#endif
+ 
+      sum_FOURN=sum_FOURN+(t3-t2)
       else
       call fourn(data,nn2,2,1)
       endif
@@ -3932,11 +3963,27 @@ c
 50     continue
 c
       if(npts3.gt.1) then
+ 
+#ifdef MPI
+      call MPI_Barrier(MPI_COMM_WORLD,ierr)
+      t33=MPI_Wtime()
+#else 
+      call cpu_time(t33)
+#endif
+
+
       call fourn(data,nn,3,-1)
+ 
+#ifdef MPI
+      call MPI_Barrier(MPI_COMM_WORLD,ierr)
+      t44=MPI_Wtime()
+#else 
+      call cpu_time(t44)
+#endif
       else
       call fourn(data,nn2,2,-1)
       endif
-c
+      sum_FOURN=sum_FOURN+(t44-t33)
       do i=1,2*npts1*npts2*npts3
       data(i)=data(i)/prodnn
       enddo
@@ -4011,21 +4058,38 @@ c#endif
         Endif
 #endif
 #endif
-       call CPU_TIME(t3)
-       call evpal(imicro)
+
+ 
+#ifdef MPI
+        call MPI_Barrier(MPI_COMM_WORLD,ierr)
+        t4=MPI_Wtime()
+c       if(rank .eq. 0) then
+c       call CPU_TIME(t4)
+c       Endif
+#else
        call CPU_TIME(t4)
-       sum_evapl=sum_evapl+(t4-t3)
+#endif
+       call evpal(imicro)
+#ifdef MPI
+        call MPI_Barrier(MPI_COMM_WORLD,ierr)
+        t5=MPI_Wtime()
+c       if(rank .eq. 0) then
+c       call CPU_TIME(t5)
+c       Endif
+#else
+       call CPU_TIME(t5)
+#endif
+       sum_evapl=sum_evapl+(t5-t4)
 
 #ifdef MPI
 #ifdef MPI0
          if(rank.eq. 0) then
 #endif
 #endif
-        
-       call CPU_TIME(t5)
+
+ 
        call get_smacro
-       call CPU_TIME(t6)
-       sum_get_smacro=sum_get_smacro+(t6-t5)
+ 
 c
       erre=erre/evm
 cxx      erre2=erre2/evm
@@ -4576,27 +4640,41 @@ cc      enddo
 ccc
 cc      endif
 ccc
-      call cpu_time(t2)
 #ifdef MPI
-      if(rank .eq. 0) then
+       call MPI_Barrier(MPI_COMM_WORLD,ierr)
+       t_end=MPI_Wtime()
+c       if(rank .eq. 0) then
+c       call CPU_TIME(t_end)
+c       Endif
+#else
+       call CPU_TIME(t_end)
+#endif
+
+ 
+
+#ifdef MPI
+c      if(rank .eq. 0) then
       print*,"====================="
       print*,"MPI Timing"
       print*,"====================="
-      print*,'The total CPU TIME:',t2-t1
+      print*,"CPU Number",rank,
+     #'The total CPU TIME:',t_end-t_start
       print*,"Evpal CPU time accumulated :",sum_evapl
-      print*,"Evpal Portion:",sum_evapl/(t2-t1)*100,"%"
+      print*,"Evpal Portion:",sum_evapl/(t_end-t_start)*100,"%"
       print*,"get_smacro CPU time accumulated :",sum_get_smacro
       print*,"FOURN CPU time accumulated :",sum_FOURN
-      endif
+c      endif
 #else
+c      if(rank .eq. 0) then
       print*,"====================="
-      print*,"Serial Timing"
+      print*,"MPI Timing"
       print*,"====================="
-      print*,'The total CPU TIME:',t2-t1
+      print*,"The total CPU TIME:",t_end-t_start
       print*,"Evpal CPU time accumulated :",sum_evapl
-      print*,"Evpal Portion:",sum_evapl/(t2-t1)*100,"%"
+      print*,"Evpal Portion:",sum_evapl/(t_end-t_start)*100,"%"
       print*,"get_smacro CPU time accumulated :",sum_get_smacro
       print*,"FOURN CPU time accumulated :",sum_FOURN
+c      endif
 #endif
  
 #ifdef MPI
@@ -4608,6 +4686,7 @@ ccc
 #ifdef MPI  
       call MPI_FINALIZE(ierror)
 #endif
+   
 
        end
 c     
