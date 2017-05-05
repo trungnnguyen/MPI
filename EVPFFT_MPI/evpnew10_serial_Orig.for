@@ -23,30 +23,26 @@ cth
       INTEGER      UR0,UR1,UR2,UR3,UR4,UR5,UR6,UW1,UW2
 cw      INTEGER*1    JPHASE,JGRAIN
 
-       dimension UDOT(3,3),DSIM(3,3),SCAUCHY(3,3),SDEVIAT(3,3),
+      COMMON/TESTCOND/UDOT(3,3),DSIM(3,3),SCAUCHY(3,3),SDEVIAT(3,3),
      #       TOMTOT(3,3),DBAR5(5),DBAR6(6),DELT(3),DELTVOL3,TDOT,
      #       DISGRADMACRO(3,3),DDISGRADMACRO(3,3),scauav(3,3),
      #       DDISGRADMACROACUM(3,3),velmax(3),
      #       IUDOT(3,3),IDSIM(6),ISCAU(6),ICTRL,NSTEPS
 cw
-      dimension DNCA(3,NSYSMX,NPHMX),DBCA(3,NSYSMX,NPHMX),
+      COMMON/DATACRYST/DNCA(3,NSYSMX,NPHMX),DBCA(3,NSYSMX,NPHMX),
      #       SCHCA(5,NSYSMX,NPHMX),
      #       TAU(NSYSMX,3,NPHMX),HARD(NSYSMX,NSYSMX,NPHMX),
      #       THET(NSYSMX,0:1,NPHMX),
      #       NRS(NSYSMX,NPHMX),GAMD0(NSYSMX,NPHMX)
 cw
-      dimension TWSH(NSYSMX,NPHMX),NSM(NMODMX,NPHMX),
+      COMMON/DATAMODES/TWSH(NSYSMX,NPHMX),NSM(NMODMX,NPHMX),
      #       NMODES(NPHMX),NSYST(NPHMX),NTWMOD(NPHMX),NTWSYS(NPHMX),
      #       ISECTW(NSYSMX,NPHMX),ICRYST(NPHMX)
 
-      dimension NPH,NELEM,IPHBOT,IPHTOP,NGR
+      COMMON/DATAPHASE/NPH,NELEM,IPHBOT,IPHTOP,NGR
 cw
-      dimension WGT,CRSS(NSYSMX,2,NPTS1,NPTS2,NPTS3),
+      COMMON/FGRID/WGT,CRSS(NSYSMX,2,NPTS1,NPTS2,NPTS3),
      #     SG(3,3,NPTS1,NPTS2,NPTS3),
-     #     sg_gathered(3,3,NPTS1,NPTS2,NPTS3),
-     #     edotp_gathered(3,3,NPTS1,NPTS2,NPTS3),
-     #     gamdot_gathered(NSYSMX,NPTS1,NPTS2,NPTS3),
-     #     TRIALTAU_gathered(NSYSMX,2,NPTS1,NPTS2,NPTS3),
      #     EDOTP(3,3,NPTS1,NPTS2,NPTS3),EPT(3,3,NPTS1,NPTS2,NPTS3),
      #     SCH(5,NSYSMX,NPTS1,NPTS2,NPTS3),AG(3,3,NPTS1,NPTS2,NPTS3),
      #     DISGRAD(3,3,NPTS1,NPTS2,NPTS3),
@@ -56,53 +52,35 @@ cg
 ct     #       VEL(3,NPTS1,NPTS2,NPTS3),TLOCAL(3,NPTS1,NPTS2,NPTS3),
      #       JPHASE(NPTS1,NPTS2,NPTS3),JGRAIN(NPTS1,NPTS2,NPTS3)
 cw
-      dimension FILETEXT,FILECRYSPL,FILECRYSEL,FILEHIST,PROSA
-      dimension UR0,UR1,UR2,UR3,UR4,UR5,UR6,UW1,UW2
-      dimension  PI,JRAN
+      COMMON/IOFILES/ FILETEXT,FILECRYSPL,FILECRYSEL,FILEHIST,PROSA
+      COMMON/IOUNITS/ UR0,UR1,UR2,UR3,UR4,UR5,UR6,UW1,UW2
+      COMMON/MISCEL/  PI,JRAN
 cw
-      dimension ERROR,FACT2,ITMAX,IRECOVER,ISAVE,IWTEX,IWDEQ
+      COMMON/RUNCOND/ERROR,FACT2,ITMAX,IRECOVER,ISAVE,IWTEX,IWDEQ
 
 cw      COMMON/STATACT/GAVMODGR(NMODMX,NPTS1,NPTS2,NPTS3),
 cw     #               GAVMOD(NMODMX,2),
 cw     #               GTOTMODGR(NMODMX,NPTS1,NPTS2,NPTS3),
 cw     #               GAVGR(NPTS1,NPTS2,NPTS3),
 
-      dimension SVM,DVM,EVM,ERRS,ERRE,ERRE2,IUPDATE,IUPHARD,
+      COMMON/PPC/SVM,DVM,EVM,ERRS,ERRE,ERRE2,IUPDATE,IUPHARD,
      #           igas(nphmx),IWFIELDS,IWSTEP
 
 cg      COMMON/ELAS/cc(3,3,3,3),c0(3,3,3,3),s0(3,3,3,3),
-      dimension cc(3,3,3,3,NPHMX),c0(3,3,3,3),s0(3,3,3,3),
+      COMMON/ELAS/cc(3,3,3,3,NPHMX),c0(3,3,3,3),s0(3,3,3,3),
      #            cg66(6,6,NPTS1,NPTS2,NPTS3),c066(6,6)
 
-      dimension GAMDOT(NSYSMX,NPTS1,NPTS2,NPTS3),
-     #            TRIALTAU(NSYSMX,2,NPTS1,NPTS2,NPTS3),
+      COMMON/HARD/GAMDOT(NSYSMX,NPTS1,NPTS2,NPTS3),
      #            GACUMGR(NPTS1,NPTS2,NPTS3),
-     #            XKIN(NSYSMX,NPTS1,NPTS2,NPTS3)
- 
-     
-      
-
-      dimension WPH1,SCAUAV1(3,3),SVM1
+     #            TRIALTAU(NSYSMX,2,NPTS1,NPTS2,NPTS3)
 cth
-      PARAMETER(NGRAINS=5000)
-      dimension ETH(3,3,NGRAINS),ITHERMO
+     #            ,XKIN(NSYSMX,NPTS1,NPTS2,NPTS3)
+cth
+cg
+      COMMON/BUF/WPH1,SCAUAV1(3,3),SVM1
+cth
+      COMMON/THER/ETH(3,3,1118),ITHERMO
 
-      PARAMETER (RSQ2=0.70710678118654744)
-      PARAMETER (RSQ3=0.57735026918962584)
-      PARAMETER (RSQ6=0.40824829046386304)
-      dimension B(3,3,6)
-      
-
-c      COMMON/BASIS/ B(3,3,6)
-
-
-
-#ifdef UGPU
-!$ACC declare create(NSYST,gamd0,sch,nrs,gamdot,trialtau,xkin)
-! $ACC declare create(B)
-!$ACC declare create(tdot,hard,tau,thet,crss)
-!$ACC declare create(gacumgr)
-#endif
       END MODULE fft_dim_MODULE
       
       MODULE VOIGT_MODULE
@@ -250,20 +228,15 @@ C **************************************************************************
       MODULE CHG_basic_MODULE
       contains
       SUBROUTINE CHG_BASIS(CE2,C2,CE4,C4,IOPT,KDIM)
-      
-
-#ifdef UGPU
-!$ACC routine seq
-#endif
-      USE fft_dim_MODULE
-
 
 c      PARAMETER (SQR2=1.41421356237309   )
-      
+      PARAMETER (RSQ2=0.70710678118654744)
+      PARAMETER (RSQ3=0.57735026918962584)
+      PARAMETER (RSQ6=0.40824829046386304)
 
       DIMENSION CE2(KDIM),C2(3,3),CE4(KDIM,KDIM),C4(3,3,3,3)
-      DIMENSION temp1,temp2
-c      double precision B(3,3,6)
+
+C     DIMENSION B(3,3,6)
 C     DATA B /RSQ6,0,   0,   0,   RSQ6,0,   0,   0,  -2*RSQ6,
 C    #        RSQ2,0,   0,   0,  -RSQ2,0,   0,   0,   0,
 C    #        0,   0,   0,   0,   0,   RSQ2,0,   RSQ2,0,
@@ -271,7 +244,8 @@ C    #        0,   0,   RSQ2,0,   0,   0,   RSQ2,0,   0,
 C    #        0,   RSQ2,0,   RSQ2,0,   0,   0,   0,   0,
 C    #        RSQ3,0,   0,   0,   RSQ3,0,   0,   0,   RSQ3/
 
-C      COMMON/BASIS/ B(3,3,6)
+      COMMON/BASIS/ B(3,3,6)
+
       IF(IOPT.EQ.0) THEN
 C *** CALCULATES BASIS TENSORS B(N)
 
@@ -304,45 +278,23 @@ C *** CALCULATES BASIS TENSORS B(N)
         B(3,3,6)=RSQ3
 
       ENDIF
-  
+
 C *** CALCULATES CARTESIAN SECOND ORDER TENSOR FROM b-COMPONENTS VECTOR.
       IF(IOPT.EQ.1) THEN
-      C2=0.0
-       
-#ifdef GPU_CHG
-!$ACC kernels
-!$ACC loop collapse(3) 
-#endif
-        DO 40 N=1,5
         DO 40 I=1,3
         DO 40 J=1,3
-c        C2(I,J)=0.0
-        
-40        C2(I,J)=C2(I,J)+CE2(N)*B(I,J,N)
-c        temp1=temp1+CE2(N)*B(I,J,N)
-c40      C2(I,J)=temp1
-#ifdef GPU_CHG
-!$ACC end kernels
-#endif
+        C2(I,J)=0.0
+        DO 40 N=1,KDIM
+   40   C2(I,J)=C2(I,J)+CE2(N)*B(I,J,N)
       ENDIF
 
 C *** CALCULATES KDIMx1 b-COMPONENTS VECTOR FROM SECOND ORDER TENSOR.
       IF(IOPT.EQ.2) THEN
-
-        CE2=0.0
-#ifdef GPU_CHG
-!$ACC kernels
-!$ACC loop collapse(3) 
-#endif
-        
-c        CE2(N)=0.0
+        DO 50 N=1,KDIM
+        CE2(N)=0.0
         DO 50 I=1,3
         DO 50 J=1,3
-        DO 50 N=1,5
-50      CE2(N)=CE2(N)+C2(I,J)*B(I,J,N)
-#ifdef GPU_CHG
-!$ACC end kernels
-#endif
+   50   CE2(N)=CE2(N)+C2(I,J)*B(I,J,N)
       ENDIF
 
 C *** CALCULATES FOURTH ORDER TENSOR FROM b-COMPONENTS MATRIX.
@@ -658,7 +610,7 @@ C
    
       
 C
-      MODULE DATA_CRYSTAL_ELAST_MODULE
+            MODULE DATA_CRYSTAL_ELAST_MODULE
       contains
       SUBROUTINE DATA_CRYSTAL_ELAST(IPH)
       USE VOIGT_MODULE
@@ -739,9 +691,6 @@ c
       MODULE ludcmp_MODULE
       contains
       SUBROUTINE ludcmp(a,n,np,indx,d,isingular)
-#ifdef UGPU
-!$ACC routine seq
-#endif
       INTEGER n,np,indx(n),NMAX
 c      REAL d,a(np,np),TINY
 c      PARAMETER (NMAX=500,TINY=1.0e-20)
@@ -820,12 +769,9 @@ c
       END  MODULE ludcmp_MODULE
        
      
-      MODULE Lubksb_MODULE
+            MODULE Lubksb_MODULE
       contains
       SUBROUTINE lubksb(a,n,np,indx,b)
-#ifdef UGPU
-!$ACC routine seq
-#endif
       INTEGER n,np,indx(n)
       REAL a(np,np),b(n)
       INTEGER i,ii,j,ll
@@ -860,9 +806,6 @@ C *************************************************************************
       MODULE LU_inverse_MODULE
       contains
       SUBROUTINE LU_INVERSE(A,N)
-#ifdef UGPU
-!$ACC routine seq
-#endif
       USE ludcmp_MODULE
       USE Lubksb_MODULE
        
@@ -1033,9 +976,6 @@ C
 
       DIMENSION IJV(6,2)
       DATA ((IJV(N,M),M=1,2),N=1,6)/1,1,2,2,3,3,2,3,1,3,1,2/
-
-
-
 
 C *********   INITIALIZATION BLOCK   ***************************
 C
@@ -1421,31 +1361,9 @@ c
       END MODULE Update_Schmid_MODULE
        
 
-      MODULE fourn_MODULE
+            MODULE fourn_MODULE
       Contains
       SUBROUTINE fourn(data,nn,ndim,isign)
-      implicit none
-      INTEGER isign,ndim,nn(ndim)
-      REAL data(*)
-
-#if 0
-      call fourn_c(data,nn,ndim,isign)
-#else
-      call fourn_f(data,nn,ndim,isign)
-#endif
-
-      end subroutine
-
-      SUBROUTINE fourn_c(data,nn,ndim,isign)
-      implicit none
-      INTEGER isign,ndim,nn(ndim)
-      REAL data(*)
-
-      call c_fourn(data,nn,ndim,isign)
-
-      end subroutine
-
-      SUBROUTINE fourn_f(data,nn,ndim,isign)
       INTEGER isign,ndim,nn(ndim)
       REAL data(*)
       INTEGER i1,i2,i2rev,i3,i3rev,ibit,idim,ifp1,ifp2,ip1,ip2,ip3,k1,
@@ -1457,10 +1375,6 @@ c
         ntot=ntot*nn(idim)
 11    continue
       nprev=1
-
-#ifdef UOMP
-!$omp parallel do default(private) firstprivate(ndim) shared(data) 
-#endif
       do 18 idim=1,ndim
         n=nn(idim)
         nrem=ntot/(n*nprev)
@@ -1523,18 +1437,13 @@ c
         endif
         nprev=n*nprev
 18    continue
-
-#ifdef UOMP
-!$omp end parallel do
-#endif
       return
-      END SUBROUTINE fourn_f
+      END SUBROUTINE fourn
       END MODULE fourn_MODULE
       
-      MODULE Minval_MODULE
+            MODULE Minval_MODULE
       contains
       SUBROUTINE MINV (A,N,D,L,M)
-      
 c
       DIMENSION A(*),L(*),M(*)
 C
@@ -1658,24 +1567,12 @@ C
       
 
        
-      MODULE Edost_sg_Eval_MODULE
+             MODULE Edost_sg_Eval_MODULE
       contains
- 
- 
       subroutine edotp_sg_eval(sg6,edotp6,dedotp66,i,j,k,jph)
- 
- 
-#ifdef UGPU
-!$ACC routine seq 
-#endif  
+
       USE fft_dim_MODULE
 c
-#ifdef MPI
-      USE mpi
-#endif
-
-
-
       dimension sg6(6)
       dimension edotp6(6),dedotp66(6,6)
 c
@@ -1686,31 +1583,6 @@ cth
       dimension xkinaux(NSYSMX)
 cth
 c
-      real tmp11
-
-#ifdef MPI
-       integer rank, size, ierror, tag  
-       integer status(MPI_STATUS_SIZE)
-       integer ib,ie
-#endif
-
-
-#ifdef MPI
-      call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
-      call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
-#endif
-
- 
- 
-#ifdef MPI
-      ib=(npts3/size)*rank+1
-      ie=npts3/size*(1+rank)
-c      print*,ib,ie
- 
-#endif
- 
-
- 
       DO is=1,nsyst(jph)
 
         nrsx(is)=nrs(is,jph)
@@ -1750,42 +1622,22 @@ chard
 chard
       enddo
 c
-
-#ifndef MPI
-      DO II=ib_6,ie_6
-        edotp6(II)=0.
-        DO K1=1,NSYST(jph)
-          edotp6(II)=edotp6(II)+SC(II,K1)*RSS2(K1)
-        ENDDO
-      ENDDO
-#else
       DO II=1,5
-        edotp6(II)=0.
+      edotp6(II)=0.
         DO K1=1,NSYST(jph)
           edotp6(II)=edotp6(II)+SC(II,K1)*RSS2(K1)
         ENDDO
       ENDDO
-#endif
-   
 c
       edotp6(6)=0.
-     
 c
-       tmp11=0.
-       dedotp66=0.        
-
       DO II=1,5
       DO JJ=1,5
-c       dedotp66(II,JJ)=0.
-
-
-     
-       DO K1=1,12 !NSYST(jph)
-c         dedotp66(II,JJ)=
-c     #   dedotp66(II,JJ)+SC(II,K1)*SC(JJ,K1)*RSS1(K1)
-       tmp11= tmp11+SC(II,K1)*SC(JJ,K1)*RSS1(K1)
+       dedotp66(II,JJ)=0.
+       DO K1=1,NSYST(jph)
+         dedotp66(II,JJ)=
+     #   dedotp66(II,JJ)+SC(II,K1)*SC(JJ,K1)*RSS1(K1)
        ENDDO
-       dedotp66(II,JJ)=tmp11
       ENDDO
       ENDDO
 
@@ -1794,17 +1646,14 @@ c     #   dedotp66(II,JJ)+SC(II,K1)*SC(JJ,K1)*RSS1(K1)
        dedotp66(6,II)=0.
       enddo
 
- 
       RETURN
       END subroutine edotp_sg_eval
       END MODULE Edost_sg_Eval_MODULE
       
-      MODULE Get_trialtau_MODULE 
+            MODULE Get_trialtau_MODULE 
       contains
       subroutine get_trialtau(i,j,k,jph)
-#ifdef UGPU
-!$ACC routine seq
-#endif
+
       USE fft_dim_MODULE
 
       GAMTOTX=GACUMGR(I,J,K)
@@ -1856,12 +1705,7 @@ c     #   dedotp66(II,JJ)+SC(II,K1)*SC(JJ,K1)*RSS1(K1)
       USE Edost_sg_Eval_MODULE
       USE Get_trialtau_MODULE
       USE fft_dim_MODULE
-      
-#ifdef MPI
-      USE mpi
-#endif
 
-      integer counter
       dimension xlambda(3,3),xlambda6(6)
 c
       dimension sgaux(3,3),sg6(6),sg6old(6)
@@ -1884,143 +1728,28 @@ cg      dimension disgradceq(3,3),disgradceq6(6)
       dimension strainceq(3,3),strainceq6(6)
       dimension res(6)
       dimension xjacobinv(6,6)
-      
-
-#ifdef MPI
-       integer rank, size, ierror, tag, REQUEST(2) 
-       integer status(MPI_STATUS_SIZE)
-       integer ib,ie,ib_recv,ie_recv
- 
-c        double precision ERRS_global,ERRE_global
-       real ERRS_global,ERRE_global
-c       real sg_gathered
-#endif
-       double precision sum_edotp_sg_eval_in_evapl,sum_chg_basis_in_evapl       
-       double precision t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12
- 
-
-
-
-
-#ifdef MPI
-      call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
-      call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
-c      print*, "I am Node",rank,"out of",size,"cores"
-#endif
-
-c      print*,"define ib ie"
-#if 1
-#ifdef MPI
-      ib=(npts3/size)*rank+1
-      ie=npts3/size*(1+rank)
-c      print*,ib,ie
-c      pause
-#endif
-#endif
-
-c       print*,"defined ib ie"
 c
       ERRE=0.
       ERRS=0.
 cth
-
-
-c      write(*,*)
+      write(*,*)
 cth
-
-      
-
-
-
-#ifdef OMP
-!$omp parallel do collapse(3) private(res)
-#endif
-
-
-#ifdef GPU
-!$ACC data
-#endif
-
-#ifdef GPU
-#if 0 
-!$ACC parallel
-#else
-!$ACC kernels
-#endif
-!$ACC loop collapse(3) private(res,edotp6,eptaux,sg6,sg66,sg6old)  
-!$ACC& private(sgaux,strainaux,strainceq6,xjacobinv,xlambda)
-!$ACC& private(disgradaux)
-!$ACC& private(jph,sgnorm,dgnorm,erral,errald)
-!$ACC& private(dsgnorm1,dsgnorm2)
-!$ACC& reduction(+:iter1,dsgnorm1,dsgnorm2,ddgnorm,ERRS,ERRE,xiterav)
-!$ACC& reduction(+:sgnorm,dgnorm)
-!$ACC& private(i,j,k,ii,jj,kk)
-#endif
-
-c	print*, "before loop"
-c	print*,ib,ie
-c	pause
-
-c#ifndef MPI
-c       do 877 i=1,npts1
-c#else
-c       do 877 i=ib,ie 
-c#endif 
-
-
+      do 877 i=1,npts1
 cth
 caps      write(*,'(1H+,i5,a)') int(100.*i/npts1),'% COMPLETED'
 cth
-
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-       t20=MPI_Wtime()
-c       if(rank .eq. 0) then
-c       call CPU_TIME(t_start)
-c       Endif
-#else
-       call CPU_TIME(t20)
-#endif
-
-
-
-
-
-#ifndef MPI
-       do 877 k=1,npts3
-#else
-       do 877 k=ib,ie 
-#endif 
-       do 877 j=1,npts1
-#ifdef UGPU
-!$ACC loop seq
-#endif
-       do 877 i=1,npts2
-#ifdef UGPU
-!$ACC loop seq
-#endif
-
+      do 877 j=1,npts2
+      do 877 k=1,npts3
 cg
        jph=jphase(i,j,k)
 cg
       if(igas(jph).eq.0) then
 cg
-
-#ifdef GPU
-!$ACC loop seq
-#endif
        do ii=1,6
-#ifdef GPU
-!$ACC loop seq
-#endif
        do jj=1,6
         sg66(ii,jj)=cg66(ii,jj,i,j,k)
        enddo
        enddo
- 
-
 c
       call lu_inverse(sg66,6)
 c
@@ -2030,14 +1759,7 @@ cx      write (*,*) (sg66(ii,jj),jj=1,6)
 cx      enddo
 cx      pause
 c
-
-#ifdef GPU
-!$ACC loop seq
-#endif 
        do ii=1,3
-#ifdef GPU
-!$ACC loop seq
-#endif
        do jj=1,3
         xlambda(ii,jj)=sg(ii,jj,i,j,k)
         sgaux(ii,jj)=sg(ii,jj,i,j,k)
@@ -2047,43 +1769,26 @@ cg        disgradaux(ii,jj)=disgrad(ii,jj,i,j,k)
        enddo
        enddo
 c
-
-c      call cpu_time(t9)
       call chg_basis(xlambda6,xlambda,aux66,aux3333,2,6)
+
       call chg_basis(sg6,sgaux,aux66,aux3333,2,6)
       call chg_basis(ept6,eptaux,aux66,aux3333,2,6)
 cg      call chg_basis(disgrad6,disgradaux,aux66,aux3333,2,6)
       call chg_basis(strain6,strainaux,aux66,aux3333,2,6)
-c      call cpu_time(t10)
-c      sum_chg_basis_in_evapl=sum_chg_basis_in_evapl+(t10-t9)
-
 c
       sgnorm=0.
       dgnorm=0.
 c
-#ifdef GPU
-!$ACC loop seq
-#endif 
       do ii=1,3
-#ifdef GPU
-!$ACC loop seq
-#endif      
       do jj=1,3
        sgnorm=sgnorm+xlambda(ii,jj)**2
 cg       dgnorm=dgnorm+disgradaux(ii,jj)**2
        dgnorm=dgnorm+strainaux(ii,jj)**2
       enddo
       enddo
- 
 c
-
-c#ifdef MPI
-c      sgnorm=sqrt(sgnorm_global)
-c      dgnorm=sqrt(dgnorm_global)
-c#else
       sgnorm=sqrt(sgnorm)
       dgnorm=sqrt(dgnorm)
-c#endif
 c
 cx      write(*,*) 'SGNORM,DGNORM=',sgnorm,dgnorm
 cx      pause
@@ -2095,42 +1800,19 @@ cxx      erral=2*error
       erral=2*erroral
 c
 cxx      do while(iter1.lt.itmax.and.erral.gt.error)
-
-
-#ifdef GPU
-!$ACC loop seq
-#endif
-c       do while(iter1.lt.itmaxal.and.erral.gt.erroral)
-       do counter=1,1000
-       if(iter1.lt.itmaxal.and.erral.gt.erroral) then
-
+      do while(iter1.lt.itmaxal.and.erral.gt.erroral)
       iter1=iter1+1
 
       sg6old=sg6
 
 cth      call edotp_sg_eval(sg6,edotp6,dedotp66,i,j,k,jph)
 cthh      if(ithermo.ne.1) 
-c       call CPU_TIME(t11)
       if(ithermo.ne.1.or.imicro.ne.1) then
- 
-      
-c      print*,"before edotp_sg"
-c      print*,"i,j,k",i,j,k     
-c      pause
-        
         call edotp_sg_eval(sg6,edotp6,dedotp66,i,j,k,jph)
-        
-
       else
         edotp6=0.
       endif
-c       call CPU_TIME(t12)
-c       sum_edotp_sg_eval_in_evapl=sum_edotp_sg_eval_in_evapl+(t12-t11)
-         
 c
-#ifdef GPU
-!$ACC loop seq
-#endif
       do ii=1,6
 cth
 cthh      if(ithermo.eq.1) then
@@ -2144,9 +1826,6 @@ cth       strainceq6(ii)=0.
        strainceq6(ii)=ept6(ii)+edotp6(ii)*tdot
       endif
 cth
-#ifdef GPU
-!$ACC loop seq
-#endif
        do jj=1,6
         strainceq6(ii)=strainceq6(ii)+sg66(ii,jj)*sg6(jj)
        enddo
@@ -2169,14 +1848,9 @@ cx      write(*,*) (disgradceq(ii,jj),jj=1,3)
 cx      enddo
 cx      pause
 cx      endif
-#ifdef GPU
-!$ACC loop seq
-#endif
+
       do ii=1,6
        res(ii)=sg6(ii)-xlambda6(ii)
-#ifdef GPU
-!$ACC loop seq
-#endif
       do jj=1,6
 cg       res(ii)=res(ii)+c066(ii,jj)*(disgradceq6(jj)-disgrad6(jj))
        res(ii)=res(ii)+c066(ii,jj)*(strainceq6(jj)-strain6(jj))
@@ -2185,19 +1859,11 @@ cg       res(ii)=res(ii)+c066(ii,jj)*(disgradceq6(jj)-disgrad6(jj))
 
 cx      write(*,*) 'res=',res
 cx      pause
-#ifdef GPU
-!$ACC loop seq
-#endif
+
       do ii=1,6
-#ifdef GPU
-!$ACC loop seq
-#endif
       do jj=1,6
 cbug       xjacobinv(ii,jj)=(ii/jj)*(jj*ii)
        xjacobinv(ii,jj)=(ii/jj)*(jj/ii)
-#ifdef GPU
-!$ACC loop seq
-#endif
        do kk=1,6
 cthh        if(ithermo.eq.1) then
         if(ithermo.eq.1.and.imicro.eq.1) then
@@ -2216,9 +1882,6 @@ cx
 c
       call lu_inverse(xjacobinv,6)
 c
-#ifdef GPU
-!$ACC loop seq
-#endif
       do ii=1,6
       do jj=1,6
       sg6(ii)=sg6(ii)-xjacobinv(ii,jj)*res(jj)
@@ -2228,9 +1891,7 @@ c
       dsgnorm1=0.
       dsgnorm2=0.
       ddgnorm=0.
-#ifdef GPU
-!$ACC loop seq 
-#endif
+
       do ii=1,6
        dsgnorm1=dsgnorm1+(sg6(ii)-sg6old(ii))**2
        dsgnorm2=dsgnorm2+(sg6(ii)-xlambda6(ii))**2
@@ -2238,15 +1899,8 @@ cg       ddgnorm=ddgnorm+(disgradceq6(ii)-disgrad6(ii))**2
        ddgnorm=ddgnorm+(strainceq6(ii)-strain6(ii))**2
       enddo
 c
-
-
-c#ifdef MPI
-c      erral=dsgnorm1_global/sgnorm
-c      errald=ddgnorm_global/dgnorm
-c#else 
       erral=dsgnorm1/sgnorm
       errald=ddgnorm/dgnorm
-c#endif
 
 cx      if(i.eq.2.and.j.eq.2.and.k.eq.2) then
 cx      write(*,*) 'FP',i,j,k,'ITER1,ERRAL,ERRALD=',iter1,erral,errald
@@ -2258,33 +1912,20 @@ cth      call get_trialtau(i,j,k,jph)
 cth      if(iuphard.eq.1.and.(ithermo.ne.1.or.imicro.gt.1))  
      #   call get_trialtau(i,j,k,jph)
 chard
-
-       endif
-       enddo  ! end do while (iter1)
+      enddo  ! end do while (iter1)
 c
       call chg_basis(sg6,sgaux,aux66,aux3333,1,6)
       call chg_basis(edotp6,edotpaux,aux66,aux3333,1,6)
 c
-#ifdef GPU
-!$ACC loop seq
-#endif
        do ii=1,3
-#ifdef GPU
-!$ACC loop seq
-#endif
        do jj=1,3
         sg(ii,jj,i,j,k)=sgaux(ii,jj)  
         edotp(ii,jj,i,j,k)=edotpaux(ii,jj) 
        enddo
        enddo
 
- 
        ERRS=ERRS+dsgnorm2*WGT
        ERRE=ERRE+ddgnorm*WGT
-
-     
-
-      
 
 cx      if(i.eq.2.and.j.eq.2.and.k.eq.2) then
 cx      write(*,*) 'SGij(2,2,2)'
@@ -2304,13 +1945,7 @@ cx      endif
 cg
       else    !   igas else
 cg
-#ifdef GPU
-!$ACC loop seq
-#endif
        do ii=1,3
-#ifdef GPU
-!$ACC loop seq
-#endif
        do jj=1,3
         sg(ii,jj,i,j,k)=0.  
         edotp(ii,jj,i,j,k)=0.    !  ????
@@ -2319,553 +1954,12 @@ cg
 cg
       endif    !   igas endif
 cg 
-
-
-
-
-
 877   continue
 
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-       t21=MPI_Wtime()
-c       if(rank .eq. 0) then
-c       call CPU_TIME(t_start)
-c       Endif
-#else
-       call CPU_TIME(t21)
-#endif
-
-#if 0
-#ifdef MPI
-      sum_evapl_Comput=sum_evapl_Comput+t21-t20
-      print*,"Evpal time spent on the loop computation:"
-     #,sum_evapl_Comput
-#endif
-#endif
-      
-c      print*,sg(1:2,1:2,1:2,1:2,1:2)
-c      print*,sg(1:2,1:2,1:2,1:2,30:32)
-
-!MPI_broadcast (Does not work here)
-c      		call MPI_Bcast( sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib), 
-c     		#  MPI_DOUBLE_PRECISION,iiiii-1, MPI_COMM_WORLD, ierr )
-!CORRECT WAY TO SEND AND RECIEVE DATA TO ALL PROCESSORS!!!
-
-
-
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-       t22=MPI_Wtime()
-c       if(rank .eq. 0) then
-c       call CPU_TIME(t_start)
-c       Endif
-#else
-       call CPU_TIME(t22)
-#endif
-
-
-#ifdef SENDRECV
-
-#if 1
-#ifdef MPI
-      do jjjjj=1,size
-	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
-     #  MPI_DOUBLE_PRECISION,  jjjjj-1,1234,
-     #  MPI_COMM_WORLD,REQUEST(1),ierr )
-	  ib_recv=(npts3/size)*(jjjjj-1)+1
-	  ie_recv=npts3/size*(jjjjj)
-c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	call MPI_IRECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib+1) 
-     #   ,MPI_DOUBLE_PRECISION,jjjjj-1,1234,  
-     # MPI_COMM_WORLD,REQUEST(2), ierr )
-	endif
-      enddo !do jjjjj=1,size
-      call MPI_WAIT(REQUEST(1), STATUS, ierr)
-      call MPI_WAIT(REQUEST(2), STATUS, ierr)
-     
-#endif
-
-
-#else
-
-#ifdef MPI
-      do jjjjj=1,size
-	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
-     #  MPI_REAL,jjjjj-1,1234,
-     #  MPI_COMM_WORLD,REQUEST(1),ierr )
-	  ib_recv=(npts3/size)*(jjjjj-1)+1
-	  ie_recv=npts3/size*(jjjjj)
-c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	call MPI_IRECV(sg(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib+1) 
-     #   ,MPI_REAL,jjjjj-1,1234,  
-     # MPI_COMM_WORLD,REQUEST(2), ierr )
-	endif
-
-      enddo !do jjjjj=1,size
-      call MPI_WAIT(REQUEST(1), STATUS, ierr)
-      call MPI_WAIT(REQUEST(2), STATUS, ierr)
-#endif
-#endif
-
-
-  
-
-
-
-#if 0
-#ifdef MPI
-
-       if(imicro .eq. 2) then
-       if(rank .eq. 0) then
-       open(5555,file='sg0.out',status='unknown')
-       do 8543 i=1,npts1
-       do 8543 j=1,npts2
-       do 8543 k=1,npts3 
-       do ii=1,3
-       do jj=1,3
-       write(5555,33333) ,sg(ii,jj,i,j,k) 
-       enddo
-       enddo
-8543   continue
-       elseif(rank .eq. 1) then
-       open(6666,file='sg1.out',status='unknown')
-       do 8544 i=1,npts1
-       do 8544 j=1,npts2
-       do 8544 k=1,npts3 
-       do ii=1,3
-       do jj=1,3
-       write(6666,33333) ,sg(ii,jj,i,j,k) 
-       enddo
-       enddo
-8544   continue
-       endif
-       endif
-
-33333   format(1x,e10.4)
-
-#endif
-#endif
-
-
-
-#if 1 
-#ifdef UMPI
-      do jjjjj=1,size
-	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
-     #  MPI_DOUBLE_PRECISION,  jjjjj-1,1235,
-     #  MPI_COMM_WORLD,REQUEST(1),ierr )
-	  ib_recv=(npts3/size)*(jjjjj-1)+1
-	  ie_recv=npts3/size*(jjjjj)
-c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	  call MPI_IRECV(edotp(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib+1) 
-     #   ,MPI_DOUBLE_PRECISION,jjjjj-1,1235,  
-     # MPI_COMM_WORLD, REQUEST(2),ierr )
-	endif
-      enddo !do jjjjj=1,size
-       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-      call MPI_WAIT(REQUEST(2), STATUS, ierr)
-     
-#endif
-
-#else
-
-#ifdef UMPI
-      do jjjjj=1,size
-	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
-     #  MPI_REAL,  jjjjj-1,1235,
-     #  MPI_COMM_WORLD,REQUEST(1),ierr )
-	  ib_recv=(npts3/size)*(jjjjj-1)+1
-	  ie_recv=npts3/size*(jjjjj)
-c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	  call MPI_IRECV(edotp(:,:,:,:,ib_recv:ie_recv),3*3*npts1*npts2*(ie-ib+1) 
-     #   ,MPI_REAL,jjjjj-1,1235,  
-     # MPI_COMM_WORLD, REQUEST(2),ierr )
-	endif
-      enddo !do jjjjj=1,size
-       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-      call MPI_WAIT(REQUEST(2), STATUS, ierr)
-     
-#endif
-
-#endif
-
-
-
-
-
-
-#if 1
-#ifdef MPI
-      do jjjjj=1,size
-	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib+1),
-     #  MPI_DOUBLE_PRECISION,  jjjjj-1,1236,
-     #  MPI_COMM_WORLD,REQUEST(1),ierr )
-	  ib_recv=(npts3/size)*(jjjjj-1)+1
-	  ie_recv=npts3/size*(jjjjj)
-c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	  call MPI_IRECV(gamdot(:,:,:,ib_recv:ie_recv)
-     #   ,12*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,jjjjj-1,1236,  
-     # MPI_COMM_WORLD, REQUEST(2),ierr )
-	endif
-      enddo !do jjjjj=1,size
-       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-      call MPI_WAIT(REQUEST(2), STATUS, ierr)
-     
-#endif
-#else
-#ifdef MPI
-      do jjjjj=1,size
-	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib+1),
-     #  MPI_REAL,  jjjjj-1,1236,
-     #  MPI_COMM_WORLD,REQUEST(1),ierr )
-	  ib_recv=(npts3/size)*(jjjjj-1)+1
-	  ie_recv=npts3/size*(jjjjj)
-c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	  call MPI_IRECV(gamdot(:,:,:,ib_recv:ie_recv)
-     #   ,12*npts1*npts2*(ie-ib+1),MPI_REAL,jjjjj-1,1236,  
-     # MPI_COMM_WORLD, REQUEST(2),ierr )
-	endif
-      enddo !do jjjjj=1,size
-       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-      call MPI_WAIT(REQUEST(2), STATUS, ierr)
-     
-#endif
-
-#endif
-
-
-
-
-#if 1 
-#ifdef MPI
-      do jjjjj=1,size
-	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib+1),
-     #  MPI_DOUBLE_PRECISION,  jjjjj-1,1237,
-     #  MPI_COMM_WORLD,REQUEST(1),ierr )
-	  ib_recv=(npts3/size)*(jjjjj-1)+1
-	  ie_recv=npts3/size*(jjjjj)
-c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	  call MPI_IRECV(TRIALTAU(:,:,:,:,ib_recv:ie_recv)
-     #  ,12*2*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,jjjjj-1,1237,  
-     # MPI_COMM_WORLD, REQUEST(2),ierr )
-	endif
-      enddo !do jjjjj=1,size
-       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-      call MPI_WAIT(REQUEST(2), STATUS, ierr)
-     
-#endif
-
-#else
-
-#ifdef MPI
-      do jjjjj=1,size
-	if(rank .ne. jjjjj-1) then
-	  call MPI_ISEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib+1),
-     #  MPI_REAL,  jjjjj-1,1237,
-     #  MPI_COMM_WORLD,REQUEST(1),ierr )
-	  ib_recv=(npts3/size)*(jjjjj-1)+1
-	  ie_recv=npts3/size*(jjjjj)
-c	  print*,"ib_recv ie_recv",ib_recv,ie_recv
-	  call MPI_IRECV(TRIALTAU(:,:,:,:,ib_recv:ie_recv)
-     #  ,12*2*npts1*npts2*(ie-ib+1),MPI_REAL,jjjjj-1,1237,  
-     # MPI_COMM_WORLD, REQUEST(2),ierr )
-	endif
-      enddo !do jjjjj=1,size
-       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-      call MPI_WAIT(REQUEST(2), STATUS, ierr)
-     
-#endif
-
-#endif
-
- 
-
-
-#ifdef UMPI
-
-	if(rank .eq. 0) then
-      call MPI_SEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
-     #  MPI_DOUBLE_PRECISION, 1,1234, MPI_COMM_WORLD,ierr )
-	     ib_recv=npts3/2+1
-	     ie_recv=npts3
-      call MPI_RECV(sg(:,:,:,:,ib_recv:ie_recv),
-     #  3*3*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,1,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-	elseif(rank .eq. 1) then
-	     ib_recv=1
-	     ie_recv=npts3/2
-	call MPI_RECV(sg(:,:,:,:,ib_recv:ie_recv),
-     #  3*3*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,0,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-      call MPI_SEND(sg(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
-     #  MPI_DOUBLE_PRECISION, 0,1234, MPI_COMM_WORLD,ierr ) 
-       endif !do iiiii=1,size
- 
-       
-#endif
-
-
-
-
-#ifdef UMPI
-
-	if(rank .eq. 0) then
-      call MPI_SEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
-     #  MPI_DOUBLE_PRECISION, 1,1234, MPI_COMM_WORLD,ierr )
-	     ib_recv=npts3/2+1
-	     ie_recv=npts3
-      call MPI_RECV(edotp(:,:,:,:,ib_recv:ie_recv) 
-     # ,3*3*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,1,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-	elseif(rank .eq. 1) then
-	     ib_recv=1
-	     ie_recv=npts3/2
-      call MPI_RECV(edotp(:,:,:,:,ib_recv:ie_recv),
-     # 3*3*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,0,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-	call MPI_SEND(edotp(:,:,:,:,ib:ie), 3*3*npts1*npts2*(ie-ib+1), 
-     #  MPI_DOUBLE_PRECISION, 0,1234, MPI_COMM_WORLD,ierr ) 
-       endif !do iiiii=1,size
- 
-       
-#endif
-
-
-!For the gamdot array in edot_p_sg_eval routine
-#ifdef UMPI
-
-	if(rank .eq. 0) then
-      call MPI_SEND(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib+1), 
-     #  MPI_DOUBLE_PRECISION, 1,1234, MPI_COMM_WORLD,ierr )
-	     ib_recv=npts3/2+1
-	     ie_recv=npts3
-      call MPI_RECV(gamdot(:,:,:,ib_recv:ie_recv),
-     #  12*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,1,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-	elseif(rank .eq. 1) then
-	     ib_recv=1
-	     ie_recv=npts3/2
-	call MPI_RECV(gamdot(:,:,:,ib_recv:ie_recv),
-     #  12*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,0,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-      call MPI_SEND(gamdot(:,:,:,ib:ie), 12*npts1*npts2*(ie-ib+1), 
-     #  MPI_DOUBLE_PRECISION, 0,1234, MPI_COMM_WORLD,ierr ) 
-       endif !do iiiii=1,size
- 
-       
-#endif
- 
-!For the TRIALTAU array in get_trialtau routine
-#ifdef UMPI
-
-	if(rank .eq. 0) then
-      call MPI_SEND(TRIALTAU(:,:,:,:,ib:ie),12*2*npts1*npts2*(ie-ib+1), 
-     #  MPI_DOUBLE_PRECISION, 1,1234, MPI_COMM_WORLD,ierr )
-	     ib_recv=npts3/2+1
-	     ie_recv=npts3
-      call MPI_RECV(TRIALTAU(:,:,:,:,ib_recv:ie_recv),
-     #  12*2*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,1,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-	elseif(rank .eq. 1) then
-	     ib_recv=1
-	     ie_recv=npts3/2
-	call MPI_RECV(TRIALTAU(:,:,:,:,ib_recv:ie_recv),
-     #  12*2*npts1*npts2*(ie-ib+1),MPI_DOUBLE_PRECISION,0,1234,  
-     # MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr )
-      call MPI_SEND(TRIALTAU(:,:,:,:,ib:ie), 12*2*npts1*npts2*(ie-ib+1), 
-     #  MPI_DOUBLE_PRECISION, 0,1234, MPI_COMM_WORLD,ierr ) 
-       endif !do iiiii=1,size
- 
-       
-#endif
-
-
-
-
-
-#elif GATHER
-
-
-
-
-
-! MPI GATHER for SG
- 
-#ifdef MPI
- 
-        call MPI_Allgather(sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
-     #    MPI_DOUBLE_PRECISION,sg_gathered(:,:,:,:,:), 
-     #    3*3*npts1*npts2*(ie-ib+1),
-     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
-
-c        call MPI_IAllgather(sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
-c     #    MPI_DOUBLE_PRECISION,sg_gathered(:,:,:,:,ib:ie), 
-c     #    3*3*npts1*npts2*(ie-ib+1),
-c     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,REQUEST(1),ierr)
-
-c       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-
-      sg=sg_gathered
- 
-#endif
-
-#ifdef MPI
- 
-       call MPI_Allgather(edotp(:,:,:,:,ib:ie),
-     #  3*3*npts1*npts2*(ie-ib+1), 
-     #    MPI_DOUBLE_PRECISION,edotp_gathered(:,:,:,:,:), 
-     #    3*3*npts1*npts2*(ie-ib+1),
-     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
-
-c        call MPI_IAllgather(sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
-c     #    MPI_DOUBLE_PRECISION,sg_gathered(:,:,:,:,ib:ie), 
-c     #    3*3*npts1*npts2*(ie-ib+1),
-c     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,REQUEST(1),ierr)
-
-c       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-
-       edotp=edotp_gathered
-  
-#endif
-
-#ifdef MPI
- 
-
-
-        call MPI_Allgather(gamdot(:,:,:,ib:ie),12*npts1*npts2*(ie-ib+1), 
-     #    MPI_DOUBLE_PRECISION,gamdot_gathered(:,:,:,:), 
-     #    12*npts1*npts2*(ie-ib+1),
-     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
-
-c        call MPI_IAllgather(sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
-c     #    MPI_DOUBLE_PRECISION,sg_gathered(:,:,:,:,ib:ie), 
-c     #    3*3*npts1*npts2*(ie-ib+1),
-c     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,REQUEST(1),ierr)
-
-c       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-
-      gamdot=gamdot_gathered
-    
-#endif
-
-#ifdef MPI
- 
-        call MPI_Allgather(TRIALTAU(:,:,:,:,ib:ie),
-     #   12*2*npts1*npts2*(ie-ib+1), 
-     #    MPI_DOUBLE_PRECISION,TRIALTAU_gathered(:,:,:,:,:), 
-     #    12*2*npts1*npts2*(ie-ib+1),
-     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
-
-c        call MPI_IAllgather(sg(:,:,:,:,ib:ie),3*3*npts1*npts2*(ie-ib+1), 
-c     #    MPI_DOUBLE_PRECISION,sg_gathered(:,:,:,:,ib:ie), 
-c     #    3*3*npts1*npts2*(ie-ib+1),
-c     #   MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,REQUEST(1),ierr)
-
-c       call MPI_WAIT(REQUEST(1), STATUS, ierr)
-
-      TRIALTAU=TRIALTAU_gathered
- 
-#endif
-
-
-
-
-
-#endif  
-
-
-
-
-! To reduce over ERRS and ERRE reduction
-
-c      if(rank.eq.0) then
-c      print*,"ERR0 ERR0",ERRS 
-c    
-c      endif
-c      if(rank.eq.1) then
-c      print*,"ERR1 ERR1",ERRS
-c      endif
-#ifdef MPI
-#if 0
-       call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_REAL, 
-     #           MPI_SUM,MPI_COMM_WORLD,ierr)
-       call MPI_Allreduce(ERRE, ERRE_global, 1,MPI_REAL, 
-     #           MPI_SUM,MPI_COMM_WORLD,ierr)
-#else
-
-
-       call MPI_Allreduce(ERRS, ERRS_global, 1,MPI_DOUBLE_PRECISION, 
-     #           MPI_SUM,MPI_COMM_WORLD,ierr)
-       call MPI_Allreduce(ERRE, ERRE_global, 1,MPI_DOUBLE_PRECISION, 
-     #           MPI_SUM,MPI_COMM_WORLD,ierr)
-
-#endif
-c      call MPI_Reduce(ERRS, ERRS_global, 1, MPI_DOUBLE_PRECISION, 
-c     #           MPI_SUM,0,MPI_COMM_WORLD,ierr) 
-c      call MPI_Reduce(ERRE, ERRE_global, 1, MPI_DOUBLE_PRECISION, 
-c     #           MPI_SUM,0,MPI_COMM_WORLD,ierr)
-c      if(rank.eq.0) then
-c      print*,"ERRS ERRS ERRS ERRS ERRS",ERRS_global 
-c      endif
-       ERRS=ERRS_global
-       ERRE=ERRE_global
-#endif
-
-
-
- 
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-       t23=MPI_Wtime()
-c       if(rank .eq. 0) then
-c       call CPU_TIME(t_start)
-c       Endif
-#else
-       call CPU_TIME(t23)
-#endif
-
-#if 0
-#ifdef MPI
-       sum_evapl_Sendrecv=sum_evapl_Sendrecv+t23-t22 
-       print*,"Evpal time spent on Send_recv comunic:",
-     # sum_evapl_Sendrecv    
-#endif
-#endif
- 
-#if 0 
-!$ACC end parallel
-#else
-!$ACC end kernels
-#endif
-
-
-#ifdef GPU
-!$ACC end  data
-#endif
-#ifdef OMP
-!$omp end parallel do
-#endif
-c      write(*,*) 'ERRE=',erre
-c      write(*,*) 'ERRS=',errs
+      write(*,*) 'ERRE=',erre
+      write(*,*) 'ERRS=',errs
 cx      pause
 
-      
-c      print*,"sum_edotp_sg_eval_in_evapl CPU TIME:",sum_edotp_sg_eval_in_evapl
-c      print*,"sum_chg_basis_in_evapl CPU TIME:",sum_chg_basis_in_evapl
       return
       END subroutine evpal 
       END Module Evpal_MODULE
@@ -2880,34 +1974,12 @@ c
 c
       USE fft_dim_MODULE
 c
-
-#ifdef MPI
-!       include 'mpif.h'
-       USE mpi
-#endif
       dimension sav6(6),sav5(5)
       dimension aux55(5,5),aux66(6,6),aux3333(3,3,3,3)
       DIMENSION IJV(6,2)
 cc      dimension scauav(3,3)
 
       DATA ((IJV(N,M),M=1,2),N=1,6)/1,1,2,2,3,3,2,3,1,3,1,2/
-
-      dimension aa(3,3),distor(3,3)
-      dimension dnsa(3),dbsa(3)
-      dimension rotslip(3,3),rotloc(3,3),rot(3,3)
-c
-
-#ifdef MPI
-       integer rank, size, ierror, tag, REQUEST(2) 
-       integer status(MPI_STATUS_SIZE)
-       integer ib,ie,ib_recv,ie_recv
-
-       call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
-       call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
-c      print*, "I am Node",rank,"out of",size,"cores"
-#endif
-
-
 c
 c     OVERALL STRESS
 c
@@ -2966,30 +2038,10 @@ c
       enddo
       enddo
 c
-
-#ifdef MPI
-       if(rank .eq. 0) then
-
-
       write(*,*) 'DDISGRADMACRO(1,1),(2,2)=',
      #         ddisgradmacro(1,1),ddisgradmacro(2,2)
 cc      write(*,*) 'DDISGRADMACROACUM(1,1),(2,2)=',
 cc     #         ddisgradmacroacum(1,1),ddisgradmacroacum(2,2)
-
-       endif
-#else
-
-      write(*,*) 'DDISGRADMACRO(1,1),(2,2)=',
-     #         ddisgradmacro(1,1),ddisgradmacro(2,2)
-cc      write(*,*) 'DDISGRADMACROACUM(1,1),(2,2)=',
-cc     #         ddisgradmacroacum(1,1),ddisgradmacroacum(2,2)
-
-#endif
-
-
-
-
-
 c
 cc      call chg_basis(sav6,scauchy,aux66,aux3333,2,6)
       call chg_basis(sav6,scauav,aux66,aux3333,2,6)
@@ -3182,9 +2234,6 @@ C
       dimension th(3,3)
       dimension rot(3,3),anew(3,3)
 
-  
-
-
 c     BUILD ROTATION TENSOR BASED ON RODRIGUES FORMULA
 
       v(1)=c(3,2)
@@ -3235,25 +2284,10 @@ c     BUILD ROTATION TENSOR BASED ON RODRIGUES FORMULA
 c
       USE fft_dim_MODULE
 c
-#ifdef MPI
-!       include 'mpif.h'
-       USE mpi
-#endif
       dimension aa(3,3),distor(3,3)
       dimension dnsa(3),dbsa(3)
       dimension rotslip(3,3),rotloc(3,3),rot(3,3)
 c
-
-#ifdef MPI
-       integer rank, size, ierror, tag, REQUEST(2) 
-       integer status(MPI_STATUS_SIZE)
-       integer ib,ie,ib_recv,ie_recv
-
-       call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
-       call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
-c      print*, "I am Node",rank,"out of",size,"cores"
-#endif
-
       RSLBAR=0.
       RLCBAR=0.
 c
@@ -3343,20 +2377,10 @@ c
 c
 2000  continue  
 c
-
-#ifdef MPI
-       if(rank .eq. 1) then
       write(*,*)
       write(*,*) 'AVERAGE PLASTIC ROTATION =',rslbar
       write(*,*) 'AVERAGE LOCAL ROTATION =',rlcbar
       write(*,*)
-       endif
-#else
-      write(*,*)
-      write(*,*) 'AVERAGE PLASTIC ROTATION =',rslbar
-      write(*,*) 'AVERAGE LOCAL ROTATION =',rlcbar
-      write(*,*)
-#endif
 c
       RETURN
       END  subroutine update_orient
@@ -3423,7 +2447,7 @@ c
       
       
       program fft
- 
+      
       USE fourn_MODULE
       USE VPSC_INPUT_MODULE 
       USE EULER_MODULE
@@ -3439,11 +2463,6 @@ c
       USE vm_MODULE
       
       USE fft_dim_MODULE
-#ifdef MPI
-!       include 'mpif.h'
-      USE mpi
-#endif
-
       
 c
       integer p,q
@@ -3475,63 +2494,6 @@ c
       dimension fbar(3,3)
 cx       dimension velmax(3) 
 c
-      double precision t1,t2,t3,t4,t5,t6,t7,t8,t_start,t_end
-      double precision sum_evapl,sum_get_smacro,sum_FOURN
-     
-#ifdef MPI
-       integer rank, size, ierror, tag  
-       integer status(MPI_STATUS_SIZE)
-       
-c       integer ib,ie
-   
-#endif
- 
-#ifdef MPI
-       call MPI_INIT(ierror)
-       call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
-       call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
-       print*, "I am Node",rank,"out of",size,"cores"
-#endif
- 
-
- 
-
-
- 
-c#ifdef MPI
-c      ib=npts1/size*rank+1
-c      ie=npts1/size*(1+rank)
-c#endif
- 
-
- 
-
-
-#ifdef MPI 
-#ifdef MPI0
-        If(rank .eq. 0) then
-#endif
-#endif
-     
-
-
- 
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-       t_start=MPI_Wtime()
-c       if(rank .eq. 0) then
-c       call CPU_TIME(t_start)
-c       Endif
-#else
-       call CPU_TIME(t_start)
-#endif
-    
- 
-
-
-
       pi=4.*atan(1.)
 c
       open(55,file='vm.out',status='unknown')
@@ -3551,7 +2513,6 @@ c
       nn2(2)=npts2
 c
       prodnn=float(nn(1)*nn(2)*nn(3))
-c      prodnn=real(nn(1)*nn(2)*nn(3))
       wgt=1./prodnn
 c
       ur0=0
@@ -3580,9 +2541,6 @@ cc
       enddo
       enddo
 
-
-
-
       do 777 i=1,npts1
       do 777 j=1,npts2
       do 777 k=1,npts3
@@ -3593,10 +2551,8 @@ cth
       do jj=1,3
       edotp(ii,jj,i,j,k)=0.
 cth      ept(ii,jj,i,j,k)=0.
-      if(jgr.gt.NGRAINS) stop
       if(jgr.gt.0) then
        ept(ii,jj,i,j,k)=eth(ii,jj,jgr)
-
       else
        ept(ii,jj,i,j,k)=0.
       endif
@@ -3656,7 +2612,6 @@ cg
 
 cc      evm=0.
 
-
       evm=dvm*tdot
 
       write(55,*) 
@@ -3678,23 +2633,8 @@ cg     #           t194,a,t206,a,t218,a,t230,a)') 'EVM','E11','E22',
 cg
      #,'SVM_1','S11_1','S22_1','S33_1'
 
-
-
-#ifdef MPI
-#ifdef MPI0
-        Endif
-#endif 
-#endif
       do 3000 imicro=1,nsteps
 
-#ifdef MPI
-#ifdef MPI0
-        if(rank .eq. 0) then
-#endif
-#endif 
-
-#ifdef MPI
-       if(rank .eq. 0) then
       write(*,*) '***************************************************'
       write(*,*) 'STEP = ',imicro
       if(nsteps.ne.1) write(21,*) 'STEP = ',imicro
@@ -3715,41 +2655,8 @@ chh     #   (imicro-1)/iwstep*iwstep.eq.(imicro-1)) then
        write(93,*) 'Zone' 
        write(94,*) 'Zone'   
        Endif    
-
-
 caps
-       ENDIF
-
-       endif
-#else
-
-     
-      write(*,*) '***************************************************'
-      write(*,*) 'STEP = ',imicro
-      if(nsteps.ne.1) write(21,*) 'STEP = ',imicro
-      write(25,*) 'STEP = ',imicro
-ch
-chh      IF(IWFIELDS.EQ.1) then
-      IF(IWFIELDS.EQ.1.AND.imicro/iwstep*iwstep.eq.imicro) then
-chh      IF(IWFIELDS.EQ.1.AND.
-chh     #   (imicro-1)/iwstep*iwstep.eq.(imicro-1)) then
-       If(.not. Tec_plot_Ouptut)  then  
-       write(91,*) 'STEP = ',imicro
-       write(92,*) 'STEP = ',imicro
-       write(93,*) 'STEP = ',imicro
-       write(94,*) 'STEP = ',imicro
-       Else
-       write(91,*) 'Zone' 
-       write(92,*) 'Zone' 
-       write(93,*) 'Zone' 
-       write(94,*) 'Zone'   
-       Endif    
-
-
-caps
-       ENDIF
-
-#endif
+      ENDIF
 cc
       do 7771 i=1,npts1
       do 7771 j=1,npts2
@@ -3770,9 +2677,7 @@ chard      disgrad(ii,jj,i,j,k)=disgradmacro(ii,jj)
 
 7771  continue
 
-      if(imicro.eq.1.or.iupdate.eq.1) then 
-      call update_schmid
-      endif
+      if(imicro.eq.1.or.iupdate.eq.1) call update_schmid
 cc
       do ii=1,3
       do jj=1,3
@@ -3790,27 +2695,11 @@ cc      do while(iter.lt.itmax.and.err2mod.gt.error)
 
       erre=2*error
       errs=2*error
-
-#ifdef MPI
-#ifdef MPI0
-        Endif !(rank .eq. 0) then
-#endif 
-#endif
-
       do while(iter.lt.itmax.and.(errs.gt.error.or.erre.gt.error))
 cc      do while(iter.lt.itmax.and.erre.gt.error)
-#ifdef MPI
-#ifdef MPI0
-       if(rank .eq. 0) then
-#endif 
-#endif  
 
       iter=iter+1
 c
-
-#ifdef MPI
-       if(rank .eq. 0) then
-
       write(*,*)'ITER = ',iter
 c
       write(25,*)'ITER = ',iter
@@ -3820,25 +2709,6 @@ cx       call evp(imicro,iter)
 cx       call get_smacro
 
       write(*,*) 'DIRECT FFT OF STRESS FIELD'
-      
-      endif
-#else
-      write(*,*)'ITER = ',iter
-c
-      write(25,*)'ITER = ',iter
-    
-cx       write(*,*) 'UPDATE STRESS FIELD'
-cx       call evp(imicro,iter)
-cx       call get_smacro
-
-      write(*,*) 'DIRECT FFT OF STRESS FIELD'
-
-#endif
-
-
-
-
-
 c
       do 300 ii=1,3
       do 300 jj=1,3
@@ -3858,36 +2728,8 @@ c
       data(k1)=0.
 5     continue 
 c
-
-       if(npts3.gt.1) then
- 
-
- 
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-       t2=MPI_Wtime()
-c       if(rank .eq. 0) then
-c       call CPU_TIME(t2)
-c       Endif
-#else
-       call CPU_TIME(t2)
-#endif
-
-
+      if(npts3.gt.1) then
       call fourn(data,nn,3,1)
- 
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-      t3=MPI_Wtime()
-#else 
-      call cpu_time(t3)
-#endif
- 
-      sum_FOURN=sum_FOURN+(t3-t2)
       else
       call fourn(data,nn2,2,1)
       endif
@@ -3918,26 +2760,10 @@ cx      enddo
 cx      pause
 cx
 
-#ifdef MPI
-       if(rank .eq. 0) then
       write(*,*) 'CALCULATING G^pq,ij : SG^ij ...'
 c
-       endif
-#else
-      write(*,*) 'CALCULATING G^pq,ij : SG^ij ...'
-#endif
-
-#ifdef GPUU
-!$ACC kernels 
-#endif 
-#ifdef GPUU
-!$ACC loop collapse(3)
-!$ACC&  independent private(g1,a,kx,ky,kz,kxx,kyy,kzz,xk,xknorm)
-#endif
       do 1 kzz=1,npts3
- 
       do 1 kyy=1,npts2
- 
       do 1 kxx=1,npts1
 
       if(kxx.le.npts1/2) kx=kxx-1
@@ -3985,7 +2811,7 @@ ck
       do 2 l=1,3
       a(i,k)=a(i,k)+c0(i,j,k,l)*xk(j)*xk(l)
 2     continue
-  
+
       call minv(a,3,det,minv1,minv2)
 c
 c      if(det.eq.0) then
@@ -4079,9 +2905,7 @@ cx      workim(i,j,kxx,kyy,kzz)=ddisgradim(i,j)
       enddo
 
 1     continue
-#ifdef GPUU
-!$ACC END kernels
-#endif
+
 cx      write(*,*) 'Re(^DdisGRADij)(2,2,2)'
 cx      do ii=1,3
 cx      write(*,*) (work(ii,jj,2,2,2),jj=1,3)
@@ -4094,14 +2918,8 @@ cx      pause
 
 cc      call equilibrium(snormfft,snormfftim,nn,err2mod)
 
-#ifdef MPI
-       if(rank .eq. 0) then
       write(*,*) 'INVERSE FFT TO GET STRAIN FIELD'
 c
-       endif
-#else
-      write(*,*) 'INVERSE FFT TO GET STRAIN FIELD'
-#endif
       do 51 m=1,3
       do 51 n=1,3
 
@@ -4125,31 +2943,11 @@ c
 50     continue
 c
       if(npts3.gt.1) then
- 
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-      t33=MPI_Wtime()
-#else 
-      call cpu_time(t33)
-#endif
-
-
       call fourn(data,nn,3,-1)
- 
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-      t44=MPI_Wtime()
-#else 
-      call cpu_time(t44)
-#endif
       else
       call fourn(data,nn2,2,-1)
       endif
-      sum_FOURN=sum_FOURN+(t44-t33)
+c
       do i=1,2*npts1*npts2*npts3
       data(i)=data(i)/prodnn
       enddo
@@ -4199,67 +2997,9 @@ c
 
 cxx      erre2=tnorm(ddisgradav,3,3)
 
-#ifdef MPI
-       if(rank .eq. 0) then
        write(*,*) 'UPDATE STRESS FIELD'
-       endif
-#else
-
-       write(*,*) 'UPDATE STRESS FIELD'
-#endif
-
-
-
-
-c       print*,"I am before evpal"
-c       print*,"ib,ie",ib,ie
-c       pause
-       
-c#ifdef MPI
-c        Endif ! End if(rank.eq.0) 
-c#endif
-
-#ifdef MPI
-#ifdef MPI0
-        Endif
-#endif
-#endif
-
- 
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-        t4=MPI_Wtime()
-c       if(rank .eq. 0) then
-c       call CPU_TIME(t4)
-c       Endif
-#else
-       call CPU_TIME(t4)
-#endif
        call evpal(imicro)
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-        t5=MPI_Wtime()
-c       if(rank .eq. 0) then
-c       call CPU_TIME(t5)
-c       Endif
-#else
-       call CPU_TIME(t5)
-#endif
-       sum_evapl=sum_evapl+(t5-t4)
-
-#ifdef MPI
-#ifdef MPI0
-         if(rank.eq. 0) then
-#endif
-#endif
-
- 
        call get_smacro
- 
 c
       erre=erre/evm
 cxx      erre2=erre2/evm
@@ -4268,21 +3008,11 @@ cxx      erre2=erre2/evm
 cc       write(*,*) 'STRESS FIELD ERROR =',errs/svm
 cc       write(*,*) 'STRAIN FIELD ERROR =',erre/evm
 
-#ifdef MPI
-       if(rank .eq. 0) then
-       write(*,*) 'STRAIN FIELD ERROR =',erre
-cxx       write(*,*) 'STRAIN FIELD ERROR (ALT) =',erre2
-       write(*,*) 'STRESS FIELD ERROR =',errs
-
-       write(21,101) iter,erre,errs,svm
-       endif
-#else
        write(*,*) 'STRAIN FIELD ERROR =',erre
 cxx       write(*,*) 'STRAIN FIELD ERROR (ALT) =',erre2
        write(*,*) 'STRESS FIELD ERROR =',errs
 
       write(21,101) iter,erre,errs,svm
-#endif
 
 c     STATISTIC ON ACTIVITIES
 c
@@ -4309,21 +3039,7 @@ c
 c
 c     ENDDO ... WHILE
 c
-#ifdef MPI
-#ifdef MPI0
-        Endif ! End if(rank.eq.0) 
-#endif
-#endif
-
-
       enddo
-
-#ifdef MPI
-#ifdef MPI0
-        if(rank.eq.0) then 
-#endif
-#endif
-
 cth
 cth   kinematic hardening (ithermo.eq.1)
 cth
@@ -4354,11 +3070,6 @@ c
       enddo
       enddo
 
-#ifdef MPI
-
-      if(rank .eq. 0) then
-
-
       write(*,*) 
      #  'disgradmacro(1,1),disgradmacro(2,2),disgradmacro(3,3)'
       write(*,*) disgradmacroactual(1,1),disgradmacroactual(2,2),
@@ -4372,31 +3083,6 @@ cg      write(*,*) 'scauav(1,1),scauav(2,2),scauav(3,3)'
 cg      write(*,*) scauav(1,1),scauav(2,2),scauav(3,3)
       write(*,*) 'scauav1(1,1),scauav1(2,2),scauav1(3,3)'
       write(*,*) scauav1(1,1),scauav1(2,2),scauav1(3,3)
-
-      endif
-
-#else
-
-
-      write(*,*) 
-     #  'disgradmacro(1,1),disgradmacro(2,2),disgradmacro(3,3)'
-      write(*,*) disgradmacroactual(1,1),disgradmacroactual(2,2),
-     #            disgradmacroactual(3,3)
-c
-      write(*,*) 'disgradmacro(1,1)/disgradmacro(3,3)'
-      write(*,*) disgradmacroactual(1,1)/
-     #           disgradmacroactual(3,3)
-
-cg      write(*,*) 'scauav(1,1),scauav(2,2),scauav(3,3)'
-cg      write(*,*) scauav(1,1),scauav(2,2),scauav(3,3)
-      write(*,*) 'scauav1(1,1),scauav1(2,2),scauav1(3,3)'
-      write(*,*) scauav1(1,1),scauav1(2,2),scauav1(3,3)
-
-
-#endif
-
-
-
 c
 c     TOTAL (EL+PL) VM
 c
@@ -4474,11 +3160,6 @@ cth      IF(IUPHARD.EQ.1) CALL HARDEN
 cth      if(iuphard.eq.1.and.(ithermo.ne.1.or.imicro.gt.1))
      #  call harden
 c
-
-#ifdef MPI
-       if(rank .eq. 0) then
-
-
       write(55,315) evm,evmp,dvm,dvmp,svm,svm1
 
       write(56,315) evm,disgradmacroactual(1,1),
@@ -4527,68 +3208,6 @@ caps
       write(94,*) 
      # '   x    y    z  ngr   ph  ELLOC (11,22,33,23,31,12)'
       Endif !If(.not. Tec_plot_Ouptut)  then
-
-      endif
-#else
-
-
-      write(55,315) evm,evmp,dvm,dvmp,svm,svm1
-
-      write(56,315) evm,disgradmacroactual(1,1),
-     #   disgradmacroactual(2,2),disgradmacroactual(3,3),
-     #   evmp,epav(1,1),epav(2,2),epav(3,3),
-     #   dvm,velgradmacro(1,1),velgradmacro(2,2),velgradmacro(3,3),
-     #   dvmp,edotpav(1,1),edotpav(2,2),edotpav(3,3),
-     #   svm,scauav(1,1),scauav(2,2),scauav(3,3)
-cg
-     #   ,svm1,scauav1(1,1),scauav1(2,2),scauav1(3,3)
-cg
-315   format(24(e11.4,1x))
-c
-chh      IF(IWFIELDS.EQ.1) THEN
-      IF(IWFIELDS.EQ.1.AND.imicro/iwstep*iwstep.eq.imicro) then
-chh      IF(IWFIELDS.EQ.1.AND.
-chh     #   (imicro-1)/iwstep*iwstep.eq.(imicro-1)) then
-ch
-ch      IF(IWFIELDS.EQ.1.AND.
-ch     #  (IMICRO.EQ.1.OR.IMICRO.EQ.40.OR.IMICRO.EQ.100) ) THEN
-ch
-c      
-c      FIELDS.OUT
-c
-ch      IF(IMICRO.EQ.1) THEN
-ch      open(91,file='fields1.out',status='unknown')
-ch      ELSE IF(IMICRO.EQ.40) THEN
-ch      open(91,file='fields40.out',status='unknown')
-ch      ELSE IF(IMICRO.EQ.100) THEN
-ch      open(91,file='fields100.out',status='unknown')
-ch      ENDIF
-ch
-      If(.not. Tec_plot_Ouptut)  then     
-      write(91,*) delt
-      write(92,*) delt
-      write(93,*) delt
-      write(94,*) delt
-c
-      write(91,*) 
-     # '   x    y    z  ngr   ph  ELOC (11,22,33,23,31,12)'
-      write(92,*) 
-     # '   x    y    z  ngr   ph  SLOC (11,22,33,23,31,12)'
-      write(93,*) 
-     # '   x    y    z  ngr   ph  DPLOC (11,22,33,23,31,12)'
-caps
-      write(94,*) 
-     # '   x    y    z  ngr   ph  ELLOC (11,22,33,23,31,12)'
-      Endif !If(.not. Tec_plot_Ouptut)  then
-
-#endif
-
-
-
-
-
-
-
       do k=1,npts3
       do j=1,npts2
       do i=1,npts1
@@ -4628,12 +3247,6 @@ caps       eel(ii,jj)=0.
 cg
        endif    ! igas endif
 caps
-
-
-
-#ifdef MPI
-       if(rank.eq.0) then
-
       write(91,305)  xk_gb(1,i,j,k),xk_gb(2,i,j,k),xk_gb(3,i,j,k),
      # jgrain(i,j,k),jphase(i,j,k),
      # disgrad(1,1,i,j,k),disgrad(2,2,i,j,k),disgrad(3,3,i,j,k),
@@ -4655,36 +3268,6 @@ caps
 caps
 c305   format(5i5,21(e11.3,1x))
 305    format(3(e11.3,1x),2i5,21(e11.3,1x))
-
-      endif
-
-#else
-
-      write(91,305)  xk_gb(1,i,j,k),xk_gb(2,i,j,k),xk_gb(3,i,j,k),
-     # jgrain(i,j,k),jphase(i,j,k),
-     # disgrad(1,1,i,j,k),disgrad(2,2,i,j,k),disgrad(3,3,i,j,k),
-     # disgrad(2,3,i,j,k),disgrad(3,1,i,j,k),disgrad(1,2,i,j,k) 
-     
-      write(92,305) xk_gb(1,i,j,k),xk_gb(2,i,j,k),xk_gb(3,i,j,k),
-     # jgrain(i,j,k),jphase(i,j,k),
-     # sg(1,1,i,j,k),sg(2,2,i,j,k),sg(3,3,i,j,k),
-     # sg(2,3,i,j,k),sg(3,1,i,j,k),sg(1,2,i,j,k)
-
-      write(93,305) xk_gb(1,i,j,k),xk_gb(2,i,j,k),xk_gb(3,i,j,k),
-     #jgrain(i,j,k),jphase(i,j,k),
-     # edotp(1,1,i,j,k),edotp(2,2,i,j,k),edotp(3,3,i,j,k),
-     # edotp(2,3,i,j,k),edotp(3,1,i,j,k),edotp(1,2,i,j,k)
-caps
-      write(94,305) xk_gb(1,i,j,k),xk_gb(2,i,j,k),xk_gb(3,i,j,k),
-     # jgrain(i,j,k),jphase(i,j,k),
-     # eel(1,1),eel(2,2),eel(3,3),eel(2,3),eel(3,1),eel(1,2)
-caps
-c305   format(5i5,21(e11.3,1x))
-305    format(3(e11.3,1x),2i5,21(e11.3,1x))
-
-#endif
-
-
    
 c
       enddo
@@ -4695,19 +3278,8 @@ ch      close(91)
 
       ENDIF
 c
-#ifdef MPI
-#ifdef MPI0
-        Endif !(rank.eq.0) then 
-#endif
-#endif
 3000  CONTINUE
 cw
- 
-#ifdef MPI
-#ifdef MPI0
-       if(rank .eq. 0) then
-#endif
-#endif
       IF(IWTEX.EQ.1) THEN
 c
 c     TEX.OUT
@@ -4726,27 +3298,11 @@ c
       fbar(i,i)=delt(i)
       enddo
 c
-#ifdef MPI
-       if(rank.eq.0) then
-
       write(24,*)'TEX.OUT from FFT'
       write(24,*)'Formatted to plot with POLE'
       write(24,111)((fbar(i,j),j=1,3),i=1,3)
       write(24,'(a1,i10)') 'B',npts1*npts2*npts3
 111   format(9f7.3) 
-       endif
-#else
-      write(24,*)'TEX.OUT from FFT'
-      write(24,*)'Formatted to plot with POLE'
-      write(24,111)((fbar(i,j),j=1,3),i=1,3)
-      write(24,'(a1,i10)') 'B',npts1*npts2*npts3
-111   format(9f7.3) 
-
-#endif
-
-
-
-
 c
       ig=0
       do k=1,npts3
@@ -4762,22 +3318,8 @@ c
 c
       call euler(1,ph,th,om,aux33)
 c
-
-
-#ifdef MPI
-       if(rank.eq.0) then
-
        write(24,3305) ph,th,om,one,i,j,k,jgrain(i,j,k),jphase(i,j,k)
 3305  format(4(f9.3,1x),5i5)
-
-       endif
-
-#else
-       write(24,3305) ph,th,om,one,i,j,k,jgrain(i,j,k),jphase(i,j,k)
-3305  format(4(f9.3,1x),5i5)
-
-#endif
-
 c
       enddo
       enddo
@@ -4810,56 +3352,6 @@ cc      enddo
 ccc
 cc      endif
 ccc
-#ifdef MPI
-#ifdef Barrier
-       call MPI_Barrier(MPI_COMM_WORLD,ierr)
-#endif
-       t_end=MPI_Wtime()
-c       if(rank .eq. 0) then
-c       call CPU_TIME(t_end)
-c       Endif
-#else
-       call CPU_TIME(t_end)
-#endif
-
- 
-
-#ifdef MPI
-c      if(rank .eq. 0) then
-      print*,"====================="
-      print*,"MPI Timing"
-      print*,"====================="
-      print*,"CPU Number",rank,
-     #'The total CPU TIME:',t_end-t_start
-      print*,"Evpal CPU time accumulated :",sum_evapl
-      print*,"Evpal Portion:",sum_evapl/(t_end-t_start)*100,"%"
-      print*,"get_smacro CPU time accumulated :",sum_get_smacro
-      print*,"FOURN CPU time accumulated :",sum_FOURN
-c      endif
-#else
-c      if(rank .eq. 0) then
-      print*,"====================="
-      print*,"Serial Timing"
-      print*,"====================="
-      print*,"The total CPU TIME:",t_end-t_start
-      print*,"Evpal CPU time accumulated :",sum_evapl
-      print*,"Evpal Portion:",sum_evapl/(t_end-t_start)*100,"%"
-      print*,"get_smacro CPU time accumulated :",sum_get_smacro
-      print*,"FOURN CPU time accumulated :",sum_FOURN
-c      endif
-#endif
- 
-#ifdef MPI
-#ifdef MPI0
-       Endif
-#endif
-#endif
-
-#ifdef MPI  
-      call MPI_FINALIZE(ierror)
-#endif
-   
-
        end
 c     
       

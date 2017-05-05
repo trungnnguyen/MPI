@@ -2,12 +2,12 @@
 C *****************************************************************************
 C     PPC.DIM for PPC14.FOR      VERSION 15/DEC/2002 
 C *****************************************************************************
-      MODULE fft_dim_MODULE
+       MODULE fft_dim_MODULE
 	SAVE
 	   LOGICAL :: Tec_plot_Ouptut
 	   PARAMETER(Tec_plot_Ouptut=.false.)
          
-      PARAMETER(NPTS1=16,NPTS2=16,NPTS3=16)
+      PARAMETER(NPTS1=32,NPTS2=32,NPTS3=32)
 cw      PARAMETER(NORMX=6000)
 
       PARAMETER(NPHMX=2)     ! MAXIMUM # OF PHASES
@@ -23,30 +23,26 @@ cth
       INTEGER      UR0,UR1,UR2,UR3,UR4,UR5,UR6,UW1,UW2
 cw      INTEGER*1    JPHASE,JGRAIN
 
-       dimension UDOT(3,3),DSIM(3,3),SCAUCHY(3,3),SDEVIAT(3,3),
+      COMMON/TESTCOND/UDOT(3,3),DSIM(3,3),SCAUCHY(3,3),SDEVIAT(3,3),
      #       TOMTOT(3,3),DBAR5(5),DBAR6(6),DELT(3),DELTVOL3,TDOT,
      #       DISGRADMACRO(3,3),DDISGRADMACRO(3,3),scauav(3,3),
      #       DDISGRADMACROACUM(3,3),velmax(3),
      #       IUDOT(3,3),IDSIM(6),ISCAU(6),ICTRL,NSTEPS
 cw
-      dimension DNCA(3,NSYSMX,NPHMX),DBCA(3,NSYSMX,NPHMX),
+      COMMON/DATACRYST/DNCA(3,NSYSMX,NPHMX),DBCA(3,NSYSMX,NPHMX),
      #       SCHCA(5,NSYSMX,NPHMX),
      #       TAU(NSYSMX,3,NPHMX),HARD(NSYSMX,NSYSMX,NPHMX),
      #       THET(NSYSMX,0:1,NPHMX),
      #       NRS(NSYSMX,NPHMX),GAMD0(NSYSMX,NPHMX)
 cw
-      dimension TWSH(NSYSMX,NPHMX),NSM(NMODMX,NPHMX),
+      COMMON/DATAMODES/TWSH(NSYSMX,NPHMX),NSM(NMODMX,NPHMX),
      #       NMODES(NPHMX),NSYST(NPHMX),NTWMOD(NPHMX),NTWSYS(NPHMX),
      #       ISECTW(NSYSMX,NPHMX),ICRYST(NPHMX)
 
-      dimension NPH,NELEM,IPHBOT,IPHTOP,NGR
+      COMMON/DATAPHASE/NPH,NELEM,IPHBOT,IPHTOP,NGR
 cw
-      dimension WGT,CRSS(NSYSMX,2,NPTS1,NPTS2,NPTS3),
+      COMMON/FGRID/WGT,CRSS(NSYSMX,2,NPTS1,NPTS2,NPTS3),
      #     SG(3,3,NPTS1,NPTS2,NPTS3),
-     #     sg_gathered(3,3,NPTS1,NPTS2,NPTS3),
-     #     edotp_gathered(3,3,NPTS1,NPTS2,NPTS3),
-     #     gamdot_gathered(NSYSMX,NPTS1,NPTS2,NPTS3),
-     #     TRIALTAU_gathered(NSYSMX,2,NPTS1,NPTS2,NPTS3),
      #     EDOTP(3,3,NPTS1,NPTS2,NPTS3),EPT(3,3,NPTS1,NPTS2,NPTS3),
      #     SCH(5,NSYSMX,NPTS1,NPTS2,NPTS3),AG(3,3,NPTS1,NPTS2,NPTS3),
      #     DISGRAD(3,3,NPTS1,NPTS2,NPTS3),
@@ -56,41 +52,37 @@ cg
 ct     #       VEL(3,NPTS1,NPTS2,NPTS3),TLOCAL(3,NPTS1,NPTS2,NPTS3),
      #       JPHASE(NPTS1,NPTS2,NPTS3),JGRAIN(NPTS1,NPTS2,NPTS3)
 cw
-      dimension FILETEXT,FILECRYSPL,FILECRYSEL,FILEHIST,PROSA
-      dimension UR0,UR1,UR2,UR3,UR4,UR5,UR6,UW1,UW2
-      dimension  PI,JRAN
+      COMMON/IOFILES/ FILETEXT,FILECRYSPL,FILECRYSEL,FILEHIST,PROSA
+      COMMON/IOUNITS/ UR0,UR1,UR2,UR3,UR4,UR5,UR6,UW1,UW2
+      COMMON/MISCEL/  PI,JRAN
 cw
-      dimension ERROR,FACT2,ITMAX,IRECOVER,ISAVE,IWTEX,IWDEQ
+      COMMON/RUNCOND/ERROR,FACT2,ITMAX,IRECOVER,ISAVE,IWTEX,IWDEQ
 
 cw      COMMON/STATACT/GAVMODGR(NMODMX,NPTS1,NPTS2,NPTS3),
 cw     #               GAVMOD(NMODMX,2),
 cw     #               GTOTMODGR(NMODMX,NPTS1,NPTS2,NPTS3),
 cw     #               GAVGR(NPTS1,NPTS2,NPTS3),
 
-      dimension SVM,DVM,EVM,ERRS,ERRE,ERRE2,IUPDATE,IUPHARD,
+      COMMON/PPC/SVM,DVM,EVM,ERRS,ERRE,ERRE2,IUPDATE,IUPHARD,
      #           igas(nphmx),IWFIELDS,IWSTEP
 
 cg      COMMON/ELAS/cc(3,3,3,3),c0(3,3,3,3),s0(3,3,3,3),
-      dimension cc(3,3,3,3,NPHMX),c0(3,3,3,3),s0(3,3,3,3),
+      COMMON/ELAS/cc(3,3,3,3,NPHMX),c0(3,3,3,3),s0(3,3,3,3),
      #            cg66(6,6,NPTS1,NPTS2,NPTS3),c066(6,6)
 
-      dimension GAMDOT(NSYSMX,NPTS1,NPTS2,NPTS3),
-     #            TRIALTAU(NSYSMX,2,NPTS1,NPTS2,NPTS3),
+      COMMON/HARD/GAMDOT(NSYSMX,NPTS1,NPTS2,NPTS3),
      #            GACUMGR(NPTS1,NPTS2,NPTS3),
-     #            XKIN(NSYSMX,NPTS1,NPTS2,NPTS3)
- 
-     
-      
-
-      dimension WPH1,SCAUAV1(3,3),SVM1
+     #            TRIALTAU(NSYSMX,2,NPTS1,NPTS2,NPTS3) 
 cth
-      PARAMETER(NGRAINS=5000)
-      dimension ETH(3,3,NGRAINS),ITHERMO
+     #            ,XKIN(NSYSMX,NPTS1,NPTS2,NPTS3)
+cth
+cg
+      COMMON/BUF/WPH1,SCAUAV1(3,3),SVM1
+cth
+      COMMON/THER/ETH(3,3,1118),ITHERMO
 
-      PARAMETER (RSQ2=0.70710678118654744)
-      PARAMETER (RSQ3=0.57735026918962584)
-      PARAMETER (RSQ6=0.40824829046386304)
-      dimension B(3,3,6)
+  
+      
       
 
 c      COMMON/BASIS/ B(3,3,6)
@@ -247,23 +239,19 @@ C     IOPT=3: CALCULATES FOURTH ORDER TENSOR 'C4' AS AN EXPANSION IN TERMS
 C             OF MATRIX COMPONENTS CE4(K,K) AND THE BASIS TENSORS B(KDIM).
 C     IOPT=4: CALCULATES MATRIX COMPONENTS CE4(K,K) OF TENSOR 'C4'.
 C **************************************************************************
+ 
       MODULE CHG_basic_MODULE
       contains
       SUBROUTINE CHG_BASIS(CE2,C2,CE4,C4,IOPT,KDIM)
-      
-
-#ifdef UGPU
-!$ACC routine seq
-#endif
-      USE fft_dim_MODULE
-
 
 c      PARAMETER (SQR2=1.41421356237309   )
-      
+      PARAMETER (RSQ2=0.70710678118654744)
+      PARAMETER (RSQ3=0.57735026918962584)
+      PARAMETER (RSQ6=0.40824829046386304)
 
       DIMENSION CE2(KDIM),C2(3,3),CE4(KDIM,KDIM),C4(3,3,3,3)
-      DIMENSION temp1,temp2
-c      double precision B(3,3,6)
+
+c      DIMENSION B(3,3,6)
 C     DATA B /RSQ6,0,   0,   0,   RSQ6,0,   0,   0,  -2*RSQ6,
 C    #        RSQ2,0,   0,   0,  -RSQ2,0,   0,   0,   0,
 C    #        0,   0,   0,   0,   0,   RSQ2,0,   RSQ2,0,
@@ -271,7 +259,8 @@ C    #        0,   0,   RSQ2,0,   0,   0,   RSQ2,0,   0,
 C    #        0,   RSQ2,0,   RSQ2,0,   0,   0,   0,   0,
 C    #        RSQ3,0,   0,   0,   RSQ3,0,   0,   0,   RSQ3/
 
-C      COMMON/BASIS/ B(3,3,6)
+      COMMON/BASIS/ B(3,3,6)
+
       IF(IOPT.EQ.0) THEN
 C *** CALCULATES BASIS TENSORS B(N)
 
@@ -304,45 +293,23 @@ C *** CALCULATES BASIS TENSORS B(N)
         B(3,3,6)=RSQ3
 
       ENDIF
-  
+
 C *** CALCULATES CARTESIAN SECOND ORDER TENSOR FROM b-COMPONENTS VECTOR.
       IF(IOPT.EQ.1) THEN
-      C2=0.0
-       
-#ifdef GPU_CHG
-!$ACC kernels
-!$ACC loop collapse(3) 
-#endif
-        DO 40 N=1,5
         DO 40 I=1,3
         DO 40 J=1,3
-c        C2(I,J)=0.0
-        
-40        C2(I,J)=C2(I,J)+CE2(N)*B(I,J,N)
-c        temp1=temp1+CE2(N)*B(I,J,N)
-c40      C2(I,J)=temp1
-#ifdef GPU_CHG
-!$ACC end kernels
-#endif
+        C2(I,J)=0.0
+        DO 40 N=1,KDIM
+   40   C2(I,J)=C2(I,J)+CE2(N)*B(I,J,N)
       ENDIF
 
 C *** CALCULATES KDIMx1 b-COMPONENTS VECTOR FROM SECOND ORDER TENSOR.
       IF(IOPT.EQ.2) THEN
-
-        CE2=0.0
-#ifdef GPU_CHG
-!$ACC kernels
-!$ACC loop collapse(3) 
-#endif
-        
-c        CE2(N)=0.0
+        DO 50 N=1,KDIM
+        CE2(N)=0.0
         DO 50 I=1,3
         DO 50 J=1,3
-        DO 50 N=1,5
-50      CE2(N)=CE2(N)+C2(I,J)*B(I,J,N)
-#ifdef GPU_CHG
-!$ACC end kernels
-#endif
+   50   CE2(N)=CE2(N)+C2(I,J)*B(I,J,N)
       ENDIF
 
 C *** CALCULATES FOURTH ORDER TENSOR FROM b-COMPONENTS MATRIX.
@@ -1662,8 +1629,13 @@ C
       contains
  
  
-      subroutine edotp_sg_eval(sg6,edotp6,dedotp66,i,j,k,jph)
+    
  
+
+
+      subroutine edotp_sg_eval(sg6,edotp6,dedotp66,i,j,k,jph)
+
+
  
 #ifdef UGPU
 !$ACC routine seq 
@@ -1674,8 +1646,7 @@ c
       USE mpi
 #endif
 
-
-
+c
       dimension sg6(6)
       dimension edotp6(6),dedotp66(6,6)
 c
@@ -1686,31 +1657,6 @@ cth
       dimension xkinaux(NSYSMX)
 cth
 c
-      real tmp11
-
-#ifdef MPI
-       integer rank, size, ierror, tag  
-       integer status(MPI_STATUS_SIZE)
-       integer ib,ie
-#endif
-
-
-#ifdef MPI
-      call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
-      call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
-#endif
-
- 
- 
-#ifdef MPI
-      ib=(npts3/size)*rank+1
-      ie=npts3/size*(1+rank)
-c      print*,ib,ie
- 
-#endif
- 
-
- 
       DO is=1,nsyst(jph)
 
         nrsx(is)=nrs(is,jph)
@@ -1750,42 +1696,22 @@ chard
 chard
       enddo
 c
-
-#ifndef MPI
-      DO II=ib_6,ie_6
-        edotp6(II)=0.
-        DO K1=1,NSYST(jph)
-          edotp6(II)=edotp6(II)+SC(II,K1)*RSS2(K1)
-        ENDDO
-      ENDDO
-#else
       DO II=1,5
-        edotp6(II)=0.
+      edotp6(II)=0.
         DO K1=1,NSYST(jph)
           edotp6(II)=edotp6(II)+SC(II,K1)*RSS2(K1)
         ENDDO
       ENDDO
-#endif
-   
 c
       edotp6(6)=0.
-     
 c
-       tmp11=0.
-       dedotp66=0.        
-
       DO II=1,5
       DO JJ=1,5
-c       dedotp66(II,JJ)=0.
-
-
-     
-       DO K1=1,12 !NSYST(jph)
-c         dedotp66(II,JJ)=
-c     #   dedotp66(II,JJ)+SC(II,K1)*SC(JJ,K1)*RSS1(K1)
-       tmp11= tmp11+SC(II,K1)*SC(JJ,K1)*RSS1(K1)
+       dedotp66(II,JJ)=0.
+       DO K1=1,NSYST(jph)
+         dedotp66(II,JJ)=
+     #   dedotp66(II,JJ)+SC(II,K1)*SC(JJ,K1)*RSS1(K1)
        ENDDO
-       dedotp66(II,JJ)=tmp11
       ENDDO
       ENDDO
 
@@ -1794,10 +1720,10 @@ c     #   dedotp66(II,JJ)+SC(II,K1)*SC(JJ,K1)*RSS1(K1)
        dedotp66(6,II)=0.
       enddo
 
- 
       RETURN
       END subroutine edotp_sg_eval
       END MODULE Edost_sg_Eval_MODULE
+     
       
       MODULE Get_trialtau_MODULE 
       contains
