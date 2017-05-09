@@ -29,7 +29,7 @@ cuel2.sx
 0.1          eqincr (if ictrl>=0) or tdot (if ictrl=-1)
 -1              ictrl (1-6: strain comp, 0: VM eq, -1: tdot)              
 *INFORMATION ABOUT RUN CONDITIONS                                         
-10000              nsteps                                                     
+2              nsteps                                                     
 0.000001         err                                                        
 25               itmax                                                      
 0               IRECOVER read grain states from STRESS.IN  (1) or not (0)?      

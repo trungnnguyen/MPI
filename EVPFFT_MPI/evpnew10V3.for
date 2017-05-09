@@ -7,13 +7,15 @@ C *****************************************************************************
 	   LOGICAL :: Tec_plot_Ouptut
 	   PARAMETER(Tec_plot_Ouptut=.false.)
          
-      PARAMETER(NPTS1=16,NPTS2=16,NPTS3=16)
+      PARAMETER(NPTS1=128,NPTS2=128,NPTS3=128)
 cw      PARAMETER(NORMX=6000)
 
       PARAMETER(NPHMX=2)     ! MAXIMUM # OF PHASES
       PARAMETER(NMODMX=1)     ! MAXIMUM # OF ACTIVE SL+TW MODES IN ANY PHASE
       PARAMETER(NTWMMX=1)     ! MAXIMUM # OF ACTIVE TWIN MODES IN ANY PHASE
       PARAMETER(NSYSMX=12)    ! MAXIMUM # OF ACTIVE SL+TW SYSTEMS IN ANY PHASE
+      PARAMETER(Num_Crystals=5000)    !# OF Crystals (grains) in the input texture
+
 
       CHARACTER*80 FILETEXT,FILECRYSPL,FILECRYSEL,FILEHIST,PROSA
 cth
@@ -136,7 +138,7 @@ c      COMMON/THER/ETH(3,3,1118),ITHERMO
 
       dimension WPH1,SCAUAV1(3,3),SVM1
 cth
-      dimension ETH(3,3,1118),ITHERMO
+      dimension ETH(3,3,Num_Crystals),ITHERMO
 
        PARAMETER (RSQ2=0.70710678118654744)
        PARAMETER (RSQ3=0.57735026918962584)
@@ -1628,7 +1630,7 @@ c
 cx       open(49,file='thermo.in',status='old') 
        open(49,file=filethermo,status='old')
 c
-       do ig=1,1118
+       do ig=1,Num_Crystals
         read(49,*) eth(1,1,ig),eth(2,2,ig),
      #             eth(3,3,ig),eth(2,3,ig),
      #             eth(3,1,ig),eth(1,2,ig)
@@ -3451,6 +3453,10 @@ c       integer ib,ie
 
 
 #ifdef MPI
+
+#ifdef Barrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif   
        t1=MPI_WTIME()
 #else
        call CPU_TIME(t1)
@@ -3699,7 +3705,27 @@ c
 5     continue 
 c
       if(npts3.gt.1) then
-      call fourn(data,nn,3,1)
+#ifdef MPI
+#ifdef Barrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
+       t5=MPI_WTIME()
+#else
+       call CPU_TIME(t5)
+#endif
+       call fourn(data,nn,3,1)
+
+#ifdef MPI
+#ifdef Barrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
+       t6=MPI_WTIME()
+#else
+       call CPU_TIME(t6)
+#endif
+       sum_Fourn=sum_Fourn+(t6-t5)
+    
+
       else
       call fourn(data,nn2,2,1)
       endif
@@ -3914,7 +3940,29 @@ c
 50     continue
 c
       if(npts3.gt.1) then
-      call fourn(data,nn,3,-1)
+
+      
+
+#ifdef MPI
+#ifdef Barrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
+       t7=MPI_WTIME()
+#else
+       call CPU_TIME(t7)
+#endif
+       call fourn(data,nn,3,-1)
+
+#ifdef MPI
+#ifdef Barrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
+       t8=MPI_WTIME()
+#else
+       call CPU_TIME(t8)
+#endif
+       sum_Fourn=sum_Fourn+(t8-t7)
+
       else
       call fourn(data,nn2,2,-1)
       endif
@@ -3970,7 +4018,29 @@ c
 cxx      erre2=tnorm(ddisgradav,3,3)
 
        write(*,*) 'UPDATE STRESS FIELD'
+
+
+#ifdef MPI
+#ifdef Barrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
+       t3=MPI_WTIME()
+#else
+       call CPU_TIME(t3)
+#endif
        call evpal(imicro)
+
+#ifdef MPI
+#ifdef Barrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
+       t4=MPI_WTIME()
+#else
+       call CPU_TIME(t4)
+#endif
+       sum_evpal=sum_evpal+(t4-t3)
+
+
        call get_smacro
    
 c
@@ -4329,15 +4399,39 @@ cc      endif
 ccc
 
 #ifdef MPI
+#ifdef Barrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
        t2=MPI_WTIME()
 #else
        call CPU_TIME(t2)
 #endif
 
 #ifdef MPI
-       print*,"I am rank",rank,"Total Time:",t2-t1
-#else
+       print*,"I am rank",rank 
+       print*,"----------------------------"
        print*,"Total Time:",t2-t1
+       print*,"----------------------------"
+       print*,"Evpal Time:",sum_evpal
+       print*,"----------------------------"
+       print*,"FFT Time:",sum_Fourn
+       print*,"----------------------------"
+       print*,"Evpal portion:",sum_evpal/(t2-t1)*100,"%"
+       print*,"----------------------------"
+       print*,"FFT portion:",sum_Fourn/(t2-t1)*100,"%"
+     
+#else
+       print*,"----------------------------"
+       print*,"Total Time:",t2-t1
+       print*,"----------------------------"
+       print*,"Evpal Time:",sum_evpal
+       print*,"----------------------------"
+       print*,"FFT Time:",sum_Fourn
+       print*,"----------------------------"
+       print*,"Evpal portion:",sum_evpal/(t2-t1)*100,"%"
+       print*,"----------------------------"
+       print*,"FFT portion:",sum_Fourn/(t2-t1)*100,"%"
+
 #endif
 
 
