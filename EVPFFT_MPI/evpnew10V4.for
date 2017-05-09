@@ -7,7 +7,7 @@ C *****************************************************************************
 	   LOGICAL :: Tec_plot_Ouptut
 	   PARAMETER(Tec_plot_Ouptut=.false.)
          
-      PARAMETER(NPTS1=32,NPTS2=32,NPTS3=32)
+      PARAMETER(NPTS1=128,NPTS2=128,NPTS3=128)
 cw      PARAMETER(NORMX=6000)
 
       PARAMETER(NPHMX=2)     ! MAXIMUM # OF PHASES
@@ -16,7 +16,7 @@ cw      PARAMETER(NORMX=6000)
       PARAMETER(NSYSMX=12)    ! MAXIMUM # OF ACTIVE SL+TW SYSTEMS IN ANY PHASE
       PARAMETER(Num_Crystals=5000)    !# OF Crystals (grains) in the input texture
 
- 
+
       CHARACTER*80 FILETEXT,FILECRYSPL,FILECRYSEL,FILEHIST,PROSA
 cth
       CHARACTER*80 FILETHERMO
@@ -3713,7 +3713,22 @@ c
 #else
        call CPU_TIME(t5)
 #endif
+
+#ifdef MPI
+       if(rank.eq.0) then
        call fourn(data,nn,3,1)
+       endif
+#else
+       call fourn(data,nn,3,1)
+#endif
+
+
+#ifdef MPI
+       call MPI_Bcast(data(:), 2*npts1*npts2*npts3,
+     # MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD,ierr) 
+#endif
+
+
 
 #ifdef MPI
 #ifdef Barrier
@@ -3951,7 +3966,21 @@ c
 #else
        call CPU_TIME(t7)
 #endif
+
+
+#ifdef MPI
+       if(rank.eq.0) then
        call fourn(data,nn,3,-1)
+       endif
+#else
+       call fourn(data,nn,3,-1)
+#endif
+
+
+#ifdef MPI
+       call MPI_Bcast(data(:), 2*npts1*npts2*npts3,
+     # MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD,ierr) 
+#endif
 
 #ifdef MPI
 #ifdef Barrier

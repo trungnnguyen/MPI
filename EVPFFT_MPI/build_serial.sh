@@ -1,7 +1,7 @@
 set -x
 
 #pgf90  -Mpreprocess -mcmodel=medium -Mlarge_arrays  -Mr8  -Msave -DUSE_FOURN -fast -tp=p7 -lrt evpnew10.for fourn.c -o EVPFFT_serial
-pgf90  -Mpreprocess -mcmodel=medium -Mlarge_arrays  -Mr8  -Msave -DUSE_FOURN -fast -tp=p7 -lrt evpnew10V3.for fourn.c -o EVPFFT_serial
+pgf90  -Mpreprocess -mcmodel=medium -Mlarge_arrays  -Mr8  -Msave -DUSE_FOURN -fast -tp=p7 -lrt evpnew10V4.for fourn.c -o EVPFFT_serial
 
 
 #pgf90 -DUSE_FOURN   -Mpreprocess -Minfo=accel -ta=host -fast -tp=p7 -lrt evpnew10.for  fourn.c 
