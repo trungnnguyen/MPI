@@ -1778,13 +1778,35 @@ c
       END MODULE Update_Schmid_MODULE
        
 
-            MODULE fourn_MODULE
+      MODULE fourn_MODULE
       Contains
       SUBROUTINE fourn(data,nn,ndim,isign)
+      implicit none
+      INTEGER isign,ndim,nn(ndim)
+      REAL data(*)
+
+#if 1
+      call fourn_c(data,nn,ndim,isign)
+#else
+      call fourn_f(data,nn,ndim,isign)
+#endif
+
+      end subroutine
+
+      SUBROUTINE fourn_c(data,nn,ndim,isign)
+      implicit none
+      INTEGER isign,ndim,nn(ndim)
+      REAL data(*)
+
+      call c_fourn(data,nn,ndim,isign)
+
+      end subroutine
+
+      SUBROUTINE fourn_f(data,nn,ndim,isign)
       INTEGER isign,ndim,nn(ndim)
       REAL data(*)
       INTEGER i1,i2,i2rev,i3,i3rev,ibit,idim,ifp1,ifp2,ip1,ip2,ip3,k1,
-     *k2,n,nprev,nrem,ntot
+     # k2,n,nprev,nrem,ntot
       REAL tempi,tempr
       DOUBLE PRECISION theta,wi,wpi,wpr,wr,wtemp
       ntot=1
@@ -1792,6 +1814,10 @@ c
         ntot=ntot*nn(idim)
 11    continue
       nprev=1
+
+#ifdef UOMP
+!$omp parallel do default(private) firstprivate(ndim) shared(data) 
+#endif
       do 18 idim=1,ndim
         n=nn(idim)
         nrem=ntot/(n*nprev)
@@ -1853,9 +1879,13 @@ c
         goto 2
         endif
         nprev=n*nprev
-18    continue
+18     continue
+
+#ifdef UOMP
+!$omp end parallel do
+#endif
       return
-      END SUBROUTINE fourn
+      END SUBROUTINE fourn_f
       END MODULE fourn_MODULE
       
             MODULE Minval_MODULE
@@ -3512,6 +3542,7 @@ c      USE CHG_basic_MODULE
 !       include 'mpif.h'
       USE mpi
 #endif      
+      
 c
       integer p,q
 c
@@ -3892,8 +3923,19 @@ c
 #endif
 
 
+
+#ifdef USE_CUFFT
+!$acc data copy(data)
+!$acc host_data use_device(data)
+#endif
        call fourn(data,nn,3,1)
+
+#ifdef USE_CUFFT
+!$acc end host_data  
+!$acc end data
+#endif 
  
+
 
 
 #ifdef MPI
@@ -3962,8 +4004,15 @@ c       t5=MPI_WTIME()
 #endif
 
 
+#ifdef USE_CUFFT
+!$acc data copy(data)
+!$acc host_data use_device(data)
+#endif
        call fourn(data,nn,3,1)
- 
+#ifdef USE_CUFFT
+!$acc end host_data  
+!$acc end data
+#endif 
 
 
 #ifdef MPI
@@ -4239,10 +4288,34 @@ c
 
 #ifdef MPI
        if(rank.eq.0) then
+
+#ifdef USE_CUFFT
+!$acc data copy(data)
+!$acc host_data use_device(data)
+#endif
        call fourn(data,nn,3,-1)
+#ifdef USE_CUFFT
+!$acc end host_data  
+!$acc end data
+#endif 
+      
+
+
+
        endif
 #else
+
+
+#ifdef USE_CUFFT
+!$acc data copy(data)
+!$acc host_data use_device(data)
+#endif
        call fourn(data,nn,3,-1)
+#ifdef USE_CUFFT
+!$acc end host_data  
+!$acc end data
+#endif 
+      
 #endif
  
 
@@ -4328,15 +4401,17 @@ c
 #endif
 
 
-#ifdef MPI
-       if(rank.eq.0) then
-       call fourn(data,nn,3,-1)
-       endif
-#else
-       call fourn(data,nn,3,-1)
+#ifdef USE_CUFFT
+!$acc data copy(data)
+!$acc host_data use_device(data)
 #endif
+       call fourn(data,nn,3,-1)
 
-
+#ifdef USE_CUFFT
+!$acc end host_data  
+!$acc end data  
+#endif      
+ 
 
 #ifdef MPI
 #ifdef Barrier
