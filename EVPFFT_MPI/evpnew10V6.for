@@ -7,7 +7,7 @@ C *****************************************************************************
 	   LOGICAL :: Tec_plot_Ouptut
 	   PARAMETER(Tec_plot_Ouptut=.false.)
          
-      PARAMETER(NPTS1=32,NPTS2=32,NPTS3=32)
+      PARAMETER(NPTS1=128,NPTS2=128,NPTS3=128)
 cw      PARAMETER(NORMX=6000)
 
       PARAMETER(NPHMX=2)     ! MAXIMUM # OF PHASES
@@ -3553,6 +3553,12 @@ c       integer ib,ie
 #ifdef MPI
        call MPI_INIT(ierror)
        call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
+       if(mod(npts1,size) .ne. 0) then
+       if(rank .eq. 0) then
+       print*, "Please enter the number of cores to be 2,4,8,16,32..." 
+       endif
+       stop
+       endif
        call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
        print*, "I am Node",rank,"out of",size,"cores"
 #endif
@@ -3853,8 +3859,79 @@ cx       call get_smacro
 #else
       write(*,*) 'DIRECT FFT OF STRESS FIELD'
 #endif
-      
+
+#ifdef MPI    
+      if(rank.eq.0) then
+
+      do 300 ii=1,3
+      do 300 jj=1,3
 c
+      k1=0
+      do 5 k=1,npts3
+c
+cw      write(*,'(1H+,a,i2,2(a,i4))') 
+cw     #   'STRESS - COMPONENT',ii,jj,'  -   Z = ',k,'   OUT OF ',npts
+c
+      do 5 j=1,npts2
+      do 5 i=1,npts1
+c
+      k1=k1+1
+      data(k1)=sg(ii,jj,i,j,k)
+      k1=k1+1
+      data(k1)=0.
+5     continue 
+c
+      if(npts3.gt.1) then
+#ifdef MPI
+#ifdef UBarrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
+       t5=MPI_WTIME()
+#else
+       call CPU_TIME(t5)
+#endif
+
+
+       call fourn(data,nn,3,1)
+ 
+
+
+#ifdef MPI
+#ifdef UBarrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
+       t6=MPI_WTIME()
+#else
+       call CPU_TIME(t6)
+#endif
+       sum_Fourn=sum_Fourn+(t6-t5)
+    
+
+
+
+      else
+      call fourn(data,nn2,2,1)
+      endif
+c
+      k1=0
+      do 6 kzz=1,npts3
+      do 6 kyy=1,npts2
+      do 6 kxx=1,npts1
+c
+      k1=k1+1
+      work(ii,jj,kxx,kyy,kzz)=data(k1)
+c
+      k1=k1+1
+      workim(ii,jj,kxx,kyy,kzz)=data(k1)
+c
+6     continue
+c
+300   continue
+
+      endif
+
+#else
+
       do 300 ii=1,3
       do 300 jj=1,3
 c
@@ -3878,37 +3955,30 @@ c
 #ifdef Barrier
        call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
 #endif
-       t5=MPI_WTIME()
+c       t5=MPI_WTIME()
+       call CPU_TIME(t5)
 #else
        call CPU_TIME(t5)
 #endif
 
-#ifdef MPI
-       if(rank.eq.0) then
+
        call fourn(data,nn,3,1)
-       endif
-#else
-       call fourn(data,nn,3,1)
-#endif
-
-
-#ifdef MPI
-       call MPI_Bcast(data(:), 2*npts1*npts2*npts3,
-     # MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD,ierr) 
-#endif
-
+ 
 
 
 #ifdef MPI
 #ifdef Barrier
        call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
 #endif
-       t6=MPI_WTIME()
+c       t6=MPI_WTIME()
+	call CPU_TIME(t6)
 #else
        call CPU_TIME(t6)
 #endif
        sum_Fourn=sum_Fourn+(t6-t5)
     
+
+
 
       else
       call fourn(data,nn2,2,1)
@@ -3929,6 +3999,22 @@ c
 c
 300   continue
 
+       
+
+#endif
+
+
+
+
+
+#ifdef MPI
+       call MPI_Bcast(work(:,:,:,:,:), 3*3*npts1*npts2*npts3,
+     # MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD,ierr) 
+       call MPI_Bcast(workim(:,:,:,:,:), 3*3*npts1*npts2*npts3,
+     # MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD,ierr) 
+       call MPI_Bcast(sum_Fourn,1,
+     # MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD,ierr)
+#endif
 cx      write(*,*) 'Re(^SGij)(2,2,2)'
 cx      do ii=1,3
 cx      write(*,*) (work(ii,jj,2,2,2),jj=1,3)
@@ -4113,6 +4199,99 @@ cc      call equilibrium(snormfft,snormfftim,nn,err2mod)
 #endif
      
 c
+#ifdef MPI
+      if(rank.eq.0) then
+      do 51 m=1,3
+      do 51 n=1,3
+
+cxx      ddisgradav(m,n)=0.
+
+cc
+cc      disgradmacro(m,n)=disgradmacro(m,n)+ddisgradmacro(m,n)
+cc
+      k1=0
+c
+      do 50 k=1,npts3
+      do 50 j=1,npts2
+      do 50 i=1,npts1
+c
+      k1=k1+1
+      data(k1)=work(m,n,i,j,k)
+c
+      k1=k1+1
+      data(k1)=workim(m,n,i,j,k)
+c
+50     continue
+c
+      if(npts3.gt.1) then
+
+      
+
+#ifdef MPI
+#ifdef UBarrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
+       t7=MPI_WTIME()
+#else
+       call CPU_TIME(t7)
+#endif
+
+
+#ifdef MPI
+       if(rank.eq.0) then
+       call fourn(data,nn,3,-1)
+       endif
+#else
+       call fourn(data,nn,3,-1)
+#endif
+ 
+
+
+#ifdef MPI
+#ifdef UBarrier
+       call MPI_BARRIER(MPI_COMM_WORLD,ierr) 
+#endif
+       t8=MPI_WTIME()
+#else
+       call CPU_TIME(t8)
+#endif
+       sum_Fourn=sum_Fourn+(t8-t7)
+
+      else
+      call fourn(data,nn2,2,-1)
+      endif
+     
+c
+      do i=1,2*npts1*npts2*npts3
+      data(i)=data(i)/prodnn
+      enddo
+c
+      k1=0
+      do 16 kzz=1,npts3
+      do 16 kyy=1,npts2
+      do 16 kxx=1,npts1
+c
+      k1=k1+1
+c      write(*,*) 'REAL PART =',kxx,kyy,kzz,data(k1)
+cc
+cc      disgrad(m,n,kxx,kyy,kzz)=disgrad(m,n,kxx,kyy,kzz)+data(k1)
+cc
+      disgrad(m,n,kxx,kyy,kzz)=disgrad(m,n,kxx,kyy,kzz)+
+     #  ddisgradmacro(m,n)+data(k1)
+
+cxx      ddisgradav(m,n)=ddisgradav(m,n)+abs(data(k1))*wgt        
+
+      k1=k1+1
+c      write(*,*) 'IMAGINARY PART =',kxx,kyy,kzz,data(k1)
+c      pause
+16    continue
+c
+51    continue
+
+      endif
+
+#else
+
       do 51 m=1,3
       do 51 n=1,3
 
@@ -4158,10 +4337,6 @@ c
 #endif
 
 
-#ifdef MPI
-       call MPI_Bcast(data(:), 2*npts1*npts2*npts3,
-     # MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD,ierr) 
-#endif
 
 #ifdef MPI
 #ifdef Barrier
@@ -4203,6 +4378,16 @@ c      pause
 16    continue
 c
 51    continue
+
+#endif
+
+#ifdef MPI
+       call MPI_Bcast(disgrad(:,:,:,:,:), 3*3*npts1*npts2*npts3,
+     # MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD,ierr) 
+       call MPI_Bcast(sum_Fourn,1,
+     # MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD,ierr)
+#endif
+
 c
 c     SYMMETRIZATION 
 c
@@ -4667,6 +4852,7 @@ ccc
 #endif
 
 #ifdef MPI
+       if(rank.eq.0) then
        print*,"I am rank",rank 
        print*,"----------------------------"
        print*,"Total Time:",t2-t1
@@ -4687,6 +4873,7 @@ ccc
        print*,"----------------------------"
        print*,"sum_chg_basis_in_main portion:",
      # sum_chg_basis_in_main/(t2-t1)*100,"%"
+      endif
 #else
        print*,"----------------------------"
        print*,"Total Time:",t2-t1
